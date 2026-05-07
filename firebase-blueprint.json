@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account information and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Contact": {
+      "title": "Emergency Contact",
+      "description": "Trusted individual to be notified in emergencies",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the user who owns this contact" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "relationship": { "type": "string" },
+        "priority": { "type": "integer", "description": "1=Primary, 2=Secondary, 3=Standby" },
+        "receiveEscalations": { "type": "boolean" },
+        "delayMinutes": { "type": "integer" }
+      },
+      "required": ["userId", "name", "phone", "priority"]
+    },
+    "Alert": {
+      "title": "Emergency Alert",
+      "description": "An active SOS signal",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "resolved", "cancelled"] },
+        "currentLevel": { "type": "integer", "description": "Current escalation priority being notified" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "lastLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        }
+      },
+      "required": ["userId", "status", "timestamp"]
+    },
+    "LiveLocation": {
+      "title": "Live Location Trace",
+      "description": "Real-time coordinate updates",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "alertId": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "accuracy": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "battery": { "type": "integer" },
+        "signal": { "type": "string" }
+      },
+      "required": ["userId", "lat", "lng", "timestamp"]
+    },
+    "CheckIn": {
+      "title": "Safety Check-in",
+      "description": "A scheduled safety confirmation window",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "deadline": { "type": "string", "format": "date-time" },
+        "durationMinutes": { "type": "integer" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "expired", "alerted"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "deadline", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/users/{userId}/contacts/{contactId}": {
+      "schema": "Contact",
+      "description": "User emergency contacts"
+    },
+    "/alerts/{alertId}": {
+      "schema": "Alert",
+      "description": "Emergency alerts"
+    },
+    "/alerts/{alertId}/locations/{locationId}": {
+      "schema": "LiveLocation",
+      "description": "Location trace for an alert"
+    },
+    "/users/{userId}/checkins/{checkInId}": {
+      "schema": "CheckIn",
+      "description": "User check-in timers"
+    }
+  }
+}

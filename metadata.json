@@ -1,0 +1,6 @@
+{
+  "name": "SAFEGUARD",
+  "description": "High-stakes security and SOS emergency response system with live location tracking and smart escalation.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["real-time-tracking", "emergency-alerts"]
+}
