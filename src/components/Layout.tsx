@@ -20,24 +20,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background text-on-background flex flex-col md:flex-row">
 
       {/* ── Desktop Sidebar ─────────────────────────────────────── */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 fixed top-0 left-0 h-screen z-50 border-r border-white/5 bg-black/60 backdrop-blur-xl">
+      <aside className="hidden md:flex flex-col w-64 shrink-0 fixed top-0 left-0 h-screen z-50 border-r border-outline-variant bg-surface/60 backdrop-blur-xl">
         {/* Brand */}
-        <div className="flex items-center gap-3 px-6 h-16 border-b border-white/5">
+        <div className="flex items-center gap-3 px-6 h-16 border-b border-outline-variant">
           <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-bold text-white shadow-lg text-sm">S</div>
-          <h1 className="text-lg font-semibold tracking-tight">
+          <h1 className="text-lg font-semibold tracking-tight text-on-background">
             GUARDIAN<span className="text-red-500">OS</span>
           </h1>
         </div>
 
         {/* User chip */}
         {user && (
-          <div className="mx-4 mt-4 flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+          <div className="mx-4 mt-4 flex items-center gap-3 p-3 rounded-xl bg-on-background/[0.03] border border-outline-variant">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-black font-bold text-xs shrink-0">
               {(user.displayName || user.email || 'U')[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white truncate">{user.displayName || 'User'}</p>
-              <p className="text-[9px] text-white/30 truncate">{user.email}</p>
+              <p className="text-xs font-semibold text-on-surface truncate">{user.displayName || 'User'}</p>
+              <p className="text-[9px] text-on-surface-variant truncate">{user.email}</p>
             </div>
             {!emailOk && (
               <span className="w-2 h-2 bg-yellow-400 rounded-full shrink-0" title="Email not configured" />
@@ -48,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Status indicator */}
         <div className="mx-4 mt-3 flex items-center gap-2 px-3 py-2">
           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">Encrypted Link</span>
+          <span className="text-[9px] font-mono uppercase tracking-widest text-on-surface-variant">Encrypted Link</span>
         </div>
 
         {/* Nav links */}
@@ -62,8 +62,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 group relative",
                   isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/40 hover:text-white hover:bg-white/5"
+                    ? "bg-on-background/10 text-on-background"
+                    : "text-on-surface-variant hover:text-on-background hover:bg-on-background/5"
                 )}
               >
                 {isActive && (
@@ -82,22 +82,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom of sidebar */}
-        <div className="px-6 py-5 border-t border-white/5">
-          <p className="text-[8px] font-mono text-white/15 uppercase tracking-widest">GuardianOS · v2.4.0</p>
+        <div className="px-6 py-5 border-t border-outline-variant">
+          <p className="text-[8px] font-mono text-on-surface-variant uppercase tracking-widest">GuardianOS · v2.4.0</p>
         </div>
       </aside>
 
       {/* ── Mobile Top Header ───────────────────────────────────── */}
-      <header className="md:hidden fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 h-14 bg-black/60 backdrop-blur-md border-b border-white/5">
+      <header className="md:hidden fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 h-14 bg-surface/60 backdrop-blur-md border-b border-outline-variant">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center font-bold text-white text-xs shadow-lg">S</div>
-          <h1 className="text-lg font-semibold tracking-tight">
+          <h1 className="text-lg font-semibold tracking-tight text-on-background">
             GUARDIAN<span className="text-red-500">OS</span>
           </h1>
         </div>
         <Link
           to="/profile"
-          className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/60"
+          className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-on-background/5 transition-colors text-on-surface-variant"
           title="Profile"
         >
           <span className="material-symbols-outlined text-lg">person</span>
@@ -115,7 +115,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* ── Mobile Bottom Nav ───────────────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-4 pt-2 bg-black/90 border-t border-white/5 backdrop-blur-xl">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-4 pt-2 bg-surface/90 border-t border-outline-variant backdrop-blur-xl">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (

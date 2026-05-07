@@ -1,11 +1,31 @@
 @import "tailwindcss";
 
+:root {
+  --background: #050505;
+  --surface: #0a0a0a;
+  --on-background: #E0E0E0;
+  --on-surface: #E0E0E0;
+  --on-surface-variant: rgba(224, 224, 224, 0.6);
+  --outline: rgba(255, 255, 255, 0.1);
+  --outline-variant: rgba(255, 255, 255, 0.05);
+}
+
+.light {
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --on-background: #0f172a;
+  --on-surface: #1e293b;
+  --on-surface-variant: rgba(30, 41, 59, 0.6);
+  --outline: rgba(0, 0, 0, 0.1);
+  --outline-variant: rgba(0, 0, 0, 0.05);
+}
+
 @theme {
-  --color-background: #050505;
-  --color-surface: #0a0a0a;
-  --color-on-background: #E0E0E0;
-  --color-on-surface: #E0E0E0;
-  --color-on-surface-variant: rgba(224, 224, 224, 0.6);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-on-background: var(--on-background);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
   
   --color-primary: #dc2626; /* red-600 */
   --color-primary-container: #991b1b; /* red-800 */
@@ -14,8 +34,8 @@
   --color-accent: #22d3ee; /* cyan-400 */
   --color-accent-container: #164e63; /* cyan-900 */
   
-  --color-outline: rgba(255, 255, 255, 0.1);
-  --color-outline-variant: rgba(255, 255, 255, 0.05);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
 
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-sos: "Inter", sans-serif;
@@ -54,6 +74,26 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  animation: radar-breathe 6s ease-in-out infinite;
+}
+
+.radar-ring:nth-child(1) { animation-delay: 0s; }
+.radar-ring:nth-child(2) { animation-delay: 2s; }
+.radar-ring:nth-child(3) { animation-delay: 4s; }
+
+@keyframes radar-breathe {
+  0%, 100% { 
+    transform: translate(-50%, -50%) scale(1); 
+    opacity: 0.3; 
+    border-color: rgba(34, 211, 238, 0.1);
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
+  }
+  50% { 
+    transform: translate(-50%, -50%) scale(1.05); 
+    opacity: 1; 
+    border-color: rgba(34, 211, 238, 0.5);
+    box-shadow: 0 0 20px 0 rgba(34, 211, 238, 0.1) inset, 0 0 20px 0 rgba(34, 211, 238, 0.1);
+  }
 }
 
 .active-status-pulse {

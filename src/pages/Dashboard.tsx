@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { dbService } from '../services/db';
 import { sosService } from '../services/sos';
@@ -17,6 +18,9 @@ export default function Dashboard() {
   const [nextCheckIn, setNextCheckIn]     = useState<CheckIn | null>(null);
   const [escalation, setEscalation]       = useState<EscalationStatus | null>(null);
   const [triggering, setTriggering]       = useState(false);
+
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const holdTimerRef = useRef<any>(null);
 
@@ -41,6 +45,20 @@ export default function Dashboard() {
 
     return () => { unsubAlert(); unsubContacts(); unsubCheckIn(); };
   }, [user]);
+
+  // ── Auto-Trigger Escalation Logic ───────────────────────────────────────
+  useEffect(() => {
+    if (activeAlert && searchParams.get('autoTrigger') === 'true' && contacts.length > 0 && !escalation) {
+      escalationEngine.start(
+        activeAlert.id,
+        contacts,
+        user?.displayName || user?.email || 'User',
+        setEscalation
+      );
+      // Remove query param to prevent re-triggering on refresh
+      navigate('/', { replace: true });
+    }
+  }, [activeAlert, searchParams, contacts, escalation, user, navigate]);
 
   // ── SOS Button Hold Logic ───────────────────────────────────────────────
   const handleStartHold = () => {
@@ -86,6 +104,14 @@ export default function Dashboard() {
     setEscalation(null);
   };
 
+  // Dynamic style for radar rings based on hold progress (exponential curve for dramatic slow-to-fast)
+  const getRadarStyle = () => {
+    const progressFactor = Math.pow(holdProgress / 100, 2); // squares the progress (0 to 1 curve)
+    return {
+      animationDuration: isHolding ? `${Math.max(0.2, 6 - progressFactor * 5.8)}s` : '6s',
+    };
+  };
+
   // ── Active alert view ───────────────────────────────────────────────────
   if (activeAlert) {
     return (
@@ -118,11 +144,11 @@ export default function Dashboard() {
           ════════════════════════════════════════════════ */}
       <div className="lg:hidden">
         {/* Hero SOS Section */}
-        <section className="flex flex-col items-center justify-center py-10 relative overflow-hidden min-h-[500px]">
+        <section className="flex flex-col items-center justify-center py-8 relative overflow-hidden min-h-[400px]">
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
-            <div className="radar-ring w-[280px] h-[280px]"></div>
-            <div className="radar-ring w-[440px] h-[440px]"></div>
-            <div className="radar-ring w-[600px] h-[600px]"></div>
+            <div className="radar-ring w-[280px] h-[280px]" style={getRadarStyle()}></div>
+            <div className="radar-ring w-[440px] h-[440px]" style={getRadarStyle()}></div>
+            <div className="radar-ring w-[600px] h-[600px]" style={getRadarStyle()}></div>
           </div>
 
           <div className="z-10 flex flex-col items-center">
@@ -151,10 +177,10 @@ export default function Dashboard() {
             </button>
 
             <div className="mt-12 text-center">
-              <h2 className="text-2xl font-light text-white/80">
+              <h2 className="text-2xl font-light text-on-background/80">
                 Everything is currently <span className="text-accent font-medium">safe</span>.
               </h2>
-              <p className="text-white/30 text-xs mt-2 uppercase tracking-widest font-bold">
+              <p className="text-on-surface-variant text-xs mt-2 uppercase tracking-widest font-bold">
                 Guardian monitoring active
               </p>
             </div>
@@ -165,19 +191,19 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Check-in Card */}
           <div className="glass-panel rounded-2xl p-6 flex flex-col gap-4">
-            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Safety Check-in</div>
+            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Safety Check-in</div>
             <div className="flex items-center justify-between">
-              <span className="text-3xl font-light">
+              <span className="text-3xl font-light text-on-background">
                 {nextCheckIn ? `${nextCheckIn.durationMinutes}:00` : '00:00'}
               </span>
-              <span className="text-[10px] px-2 py-1 rounded bg-white/10 text-white/60">
+              <span className="text-[10px] px-2 py-1 rounded bg-on-background/10 text-on-surface-variant">
                 {nextCheckIn ? 'MONITORING' : 'IDLE'}
               </span>
             </div>
-            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+            <div className="w-full bg-on-background/5 h-1 rounded-full overflow-hidden">
               <div className="bg-accent h-full transition-all duration-500" style={{ width: nextCheckIn ? '70%' : '0%' }}></div>
             </div>
-            <a href="/checkin" className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest mt-2 text-center block">
+            <a href="/checkin" className="w-full py-3 rounded-xl bg-on-background/5 border border-outline text-xs font-semibold hover:bg-on-background/10 transition-colors uppercase tracking-widest mt-2 text-center block text-on-background">
               {nextCheckIn ? 'Manage Check-in' : 'Start Check-in'}
             </a>
           </div>
@@ -197,18 +223,18 @@ export default function Dashboard() {
 
           {/* Guardians Summary */}
           <div className="glass-panel rounded-2xl p-6 flex flex-col">
-            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-4">Guardians</div>
+            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-4">Guardians</div>
             <div className="space-y-3">
               {contacts.slice(0, 3).map((contact, idx) => (
                 <div key={contact.id} className="flex items-center gap-3">
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold",
-                    idx === 0 ? "bg-gradient-to-br from-accent to-blue-600" : "bg-white/10"
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-on-background",
+                    idx === 0 ? "bg-gradient-to-br from-accent to-blue-600 text-black" : "bg-on-background/10"
                   )}>
                     {contact.name.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{contact.name}</div>
+                    <div className="text-sm font-medium truncate text-on-surface">{contact.name}</div>
                     <div className="text-[8px] text-accent uppercase tracking-tighter flex items-center gap-1">
                       P{contact.priority}
                       {contact.email
@@ -220,11 +246,11 @@ export default function Dashboard() {
                 </div>
               ))}
               {contacts.length === 0 && (
-                <p className="text-[10px] text-white/30 italic">No guardians configured.</p>
+                <p className="text-[10px] text-on-surface-variant/40 italic">No guardians configured.</p>
               )}
             </div>
-            <a href="/contacts" className="mt-auto w-full py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest text-center block mt-4">
-              Manage
+            <a href="/contacts" className="mt-5 w-full py-3.5 rounded-xl border border-outline bg-on-background/5 text-xs font-semibold hover:bg-on-background/10 transition-colors uppercase tracking-widest text-center block text-on-background">
+              Manage Guardians
             </a>
           </div>
         </div>
@@ -238,10 +264,10 @@ export default function Dashboard() {
         {/* Left column: SOS Hero */}
         <div className="flex-1 flex flex-col items-center">
           <section className="w-full flex flex-col items-center justify-center py-10 relative overflow-hidden min-h-[500px] rounded-3xl glass-panel">
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-25">
-              <div className="radar-ring w-[240px] h-[240px]"></div>
-              <div className="radar-ring w-[380px] h-[380px]"></div>
-              <div className="radar-ring w-[520px] h-[520px]"></div>
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
+              <div className="radar-ring w-[240px] h-[240px]" style={getRadarStyle()}></div>
+              <div className="radar-ring w-[380px] h-[380px]" style={getRadarStyle()}></div>
+              <div className="radar-ring w-[520px] h-[520px]" style={getRadarStyle()}></div>
             </div>
 
             <div className="z-10 flex flex-col items-center px-6">
@@ -270,10 +296,10 @@ export default function Dashboard() {
               </button>
 
               <div className="mt-12 text-center">
-                <h2 className="text-2xl font-light text-white/80">
+                <h2 className="text-2xl font-light text-on-background/80">
                   Everything is currently <span className="text-accent font-medium">safe</span>.
                 </h2>
-                <p className="text-white/30 text-xs mt-2 uppercase tracking-widest font-bold">
+                <p className="text-on-surface-variant text-xs mt-2 uppercase tracking-widest font-bold">
                   Guardian monitoring active
                 </p>
               </div>
@@ -285,19 +311,19 @@ export default function Dashboard() {
         <div className="w-80 xl:w-96 flex flex-col gap-4 shrink-0">
           {/* Check-in Card */}
           <div className="glass-panel rounded-2xl p-6 flex flex-col gap-4">
-            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold">Safety Check-in</div>
+            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold">Safety Check-in</div>
             <div className="flex items-center justify-between">
-              <span className="text-3xl font-light">
+              <span className="text-3xl font-light text-on-background">
                 {nextCheckIn ? `${nextCheckIn.durationMinutes}:00` : '00:00'}
               </span>
-              <span className="text-[10px] px-2 py-1 rounded bg-white/10 text-white/60">
+              <span className="text-[10px] px-2 py-1 rounded bg-on-background/10 text-on-surface-variant">
                 {nextCheckIn ? 'MONITORING' : 'IDLE'}
               </span>
             </div>
-            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+            <div className="w-full bg-on-background/5 h-1 rounded-full overflow-hidden">
               <div className="bg-accent h-full transition-all duration-500" style={{ width: nextCheckIn ? '70%' : '0%' }}></div>
             </div>
-            <a href="/checkin" className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest text-center block">
+            <a href="/checkin" className="w-full py-3 rounded-xl bg-on-background/5 border border-outline text-xs font-semibold hover:bg-on-background/10 transition-colors uppercase tracking-widest text-center block text-on-background">
               {nextCheckIn ? 'Manage Check-in' : 'Start Check-in'}
             </a>
           </div>
@@ -393,7 +419,7 @@ function AlertActiveView({
       <header className="relative z-10 flex justify-between items-center px-6 h-14 bg-white/5 backdrop-blur-md border-b border-white/10 shrink-0">
         <div className="flex items-center gap-2 text-white">
           <span className="material-symbols-outlined text-lg">emergency_share</span>
-          <span className="text-base font-extrabold tracking-tight">SAFEGUARD</span>
+          <span className="text-base font-extrabold tracking-tight">GUARDIANOS</span>
         </div>
         <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full">
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>

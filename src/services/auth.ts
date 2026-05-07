@@ -13,7 +13,7 @@ import { dbService } from './db';
 
 const googleProvider = new GoogleAuthProvider();
 
-async function ensureUserProfile(user: User) {
+async function ensureUserProfile(user: User, additionalData?: { phoneNumber?: string }) {
   const profile = await dbService.getDocument('users', user.uid);
   if (!profile) {
     await dbService.createDocument('users', {
@@ -21,7 +21,7 @@ async function ensureUserProfile(user: User) {
       email: user.email,
       displayName: user.displayName,
       photoURL: user.photoURL,
-      phoneNumber: user.phoneNumber,
+      phoneNumber: additionalData?.phoneNumber || user.phoneNumber || null,
     }, user.uid);
   }
 }
@@ -38,11 +38,11 @@ export const authService = {
     }
   },
 
-  async signUpWithEmail(email: string, password: string, displayName: string) {
+  async signUpWithEmail(email: string, password: string, displayName: string, phoneNumber: string) {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(result.user, { displayName });
-      await ensureUserProfile(result.user);
+      await ensureUserProfile(result.user, { phoneNumber });
       return result.user;
     } catch (error) {
       console.error('Sign Up Error:', error);

@@ -29,7 +29,32 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { useState, useEffect } from 'react';
+
 export default function App() {
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.className = theme;
+    localStorage.setItem('theme', theme);
+
+    // Listen for theme changes from other components (Profile page)
+    const handleThemeChange = () => {
+      const newTheme = localStorage.getItem('theme') || 'dark';
+      setTheme(newTheme);
+      document.documentElement.className = newTheme;
+    };
+
+    window.addEventListener('storage', handleThemeChange);
+    // Custom event for same-window updates
+    window.addEventListener('themeChange', handleThemeChange);
+
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('themeChange', handleThemeChange);
+    };
+  }, [theme]);
+
   return (
     <AuthProvider>
       <BrowserRouter>

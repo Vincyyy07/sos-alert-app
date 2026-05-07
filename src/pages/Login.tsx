@@ -21,11 +21,14 @@ function getFirebaseErrorMessage(code: string): string {
   }
 }
 
+const phoneRegex = /^\+91 [0-9]{10}$/;
+
 export default function Login() {
   const { user, signIn, signInWithEmail, signUpWithEmail } = useAuth();
   const [mode, setMode] = useState<Mode>('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('+91 ');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -39,6 +42,7 @@ export default function Login() {
 
     if (mode === 'signup') {
       if (!name.trim()) { setError('Please enter your name.'); return; }
+      if (!phoneRegex.test(phoneNumber)) { setError('Please enter a valid 10-digit phone number.'); return; }
       if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
       if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     }
@@ -46,7 +50,7 @@ export default function Login() {
     setLoading(true);
     try {
       if (mode === 'signup') {
-        await signUpWithEmail(email, password, name.trim());
+        await signUpWithEmail(email, password, name.trim(), phoneNumber);
       } else {
         await signInWithEmail(email, password);
       }
@@ -74,12 +78,12 @@ export default function Login() {
   return (
     <div className="bg-background text-on-background min-h-screen flex flex-col relative overflow-hidden">
       {/* Top Status Bar */}
-      <div className="fixed top-0 left-0 w-full bg-black/40 backdrop-blur-md py-2 px-8 flex items-center justify-between z-50 border-b border-white/5">
+      <div className="fixed top-0 left-0 w-full bg-on-background/10 backdrop-blur-md py-2 px-8 flex items-center justify-between z-50 border-b border-outline">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-accent active-status-pulse"></div>
-          <span className="text-white/40 text-[10px] font-mono uppercase tracking-widest">Encrypted Session Ready</span>
+          <span className="text-on-surface-variant/40 text-[10px] font-mono uppercase tracking-widest">Encrypted Session Ready</span>
         </div>
-        <span className="text-white/20 text-[10px] font-mono">v2.4.0-SECURE</span>
+        <span className="text-on-surface-variant/20 text-[10px] font-mono">v2.4.0-SECURE</span>
       </div>
 
       {/* Main content */}
@@ -130,27 +134,27 @@ export default function Login() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-red-600 rounded-2xl mb-6 shadow-2xl sos-glow">
                 <span className="material-symbols-outlined text-white text-[32px] font-fill">shield_with_heart</span>
               </div>
-              <h1 className="text-3xl font-extrabold text-white tracking-widest uppercase mb-2">
+              <h1 className="text-3xl font-extrabold text-on-background tracking-widest uppercase mb-2">
                 GUARDIAN<span className="text-red-600">OS</span>
               </h1>
-              <p className="text-sm font-light text-white/40 uppercase tracking-[0.2em]">High-stakes security protocol active</p>
+              <p className="text-sm font-light text-on-surface-variant uppercase tracking-[0.2em]">High-stakes security protocol active</p>
             </div>
 
             {/* Desktop heading */}
             <div className="hidden lg:block mb-8">
-              <h2 className="text-2xl font-bold text-white tracking-tight">Welcome back</h2>
-              <p className="text-white/40 text-sm mt-1">Sign in to access your security dashboard</p>
+              <h2 className="text-2xl font-bold text-on-background tracking-tight">Welcome back</h2>
+              <p className="text-on-surface-variant text-sm mt-1">Sign in to access your security dashboard</p>
             </div>
 
             <div className="glass-panel p-8 rounded-3xl shadow-2xl space-y-5">
               
               {/* Mode Toggle */}
-              <div className="flex rounded-xl overflow-hidden border border-white/10 p-1 bg-white/5 gap-1">
+              <div className="flex rounded-xl overflow-hidden border border-outline p-1 bg-on-background/5 gap-1">
                 <button
                   id="signin-tab"
                   onClick={() => { setMode('signin'); setError(''); }}
                   className={`flex-1 h-9 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
-                    mode === 'signin' ? 'bg-red-600 text-white shadow-lg' : 'text-white/30 hover:text-white/60'
+                    mode === 'signin' ? 'bg-red-600 text-white shadow-lg' : 'text-on-surface-variant/30 hover:text-on-surface-variant/60'
                   }`}
                 >
                   Sign In
@@ -159,7 +163,7 @@ export default function Login() {
                   id="signup-tab"
                   onClick={() => { setMode('signup'); setError(''); }}
                   className={`flex-1 h-9 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
-                    mode === 'signup' ? 'bg-red-600 text-white shadow-lg' : 'text-white/30 hover:text-white/60'
+                    mode === 'signup' ? 'bg-red-600 text-white shadow-lg' : 'text-on-surface-variant/30 hover:text-on-surface-variant/60'
                   }`}
                 >
                   Create Account
@@ -171,7 +175,7 @@ export default function Login() {
                 id="google-signin-btn"
                 onClick={handleGoogle}
                 disabled={loading}
-                className="w-full h-12 flex items-center justify-center gap-3 border border-white/10 bg-white/5 hover:bg-white/10 transition-all rounded-xl font-bold text-white uppercase text-[10px] tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full h-12 flex items-center justify-center gap-3 border border-outline bg-on-background/5 hover:bg-on-background/10 transition-all rounded-xl font-bold text-on-surface uppercase text-[10px] tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <img
                   alt="Google Logo"
@@ -183,18 +187,19 @@ export default function Login() {
 
               {/* Divider */}
               <div className="flex items-center gap-4">
-                <div className="h-[1px] flex-1 bg-white/5"></div>
-                <span className="text-[10px] font-mono font-bold text-white/20 uppercase tracking-widest">or</span>
-                <div className="h-[1px] flex-1 bg-white/5"></div>
+                <div className="h-[1px] flex-1 bg-outline"></div>
+                <span className="text-[10px] font-mono font-bold text-on-surface-variant/20 uppercase tracking-widest">or</span>
+                <div className="h-[1px] flex-1 bg-outline"></div>
               </div>
 
               {/* Email / Password Form */}
               <form className="space-y-4" onSubmit={handleSubmit}>
 
-                {/* Name (signup only) */}
+                {/* Name & Phone (signup only) */}
                 {mode === 'signup' && (
+                  <>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-white/30 uppercase tracking-[0.1em] ml-1" htmlFor="display-name">
+                    <label className="text-[9px] font-bold text-on-surface-variant/30 uppercase tracking-[0.1em] ml-1" htmlFor="display-name">
                       Your Name
                     </label>
                     <input
@@ -205,14 +210,33 @@ export default function Login() {
                       placeholder="e.g. Alex Johnson"
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      className="w-full h-12 px-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder:text-white/20 outline-none focus:border-accent/50 focus:bg-white/10 transition-all text-sm"
+                      className="w-full h-12 px-4 border border-outline rounded-xl bg-on-background/5 text-on-surface placeholder:text-on-surface-variant/20 outline-none focus:border-accent/50 focus:bg-on-background/10 transition-all text-sm"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-on-surface-variant/30 uppercase tracking-[0.1em] ml-1" htmlFor="phone-number">
+                      Phone Number
+                    </label>
+                    <input
+                      id="phone-number"
+                      type="tel"
+                      required
+                      placeholder="+91 9876543210"
+                      value={phoneNumber}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (!val.startsWith('+91 ')) { setPhoneNumber('+91 '); return; }
+                        if (val.length <= 14) setPhoneNumber(val);
+                      }}
+                      className="w-full h-12 px-4 border border-outline rounded-xl bg-on-background/5 text-on-surface placeholder:text-on-surface-variant/20 outline-none focus:border-accent/50 focus:bg-on-background/10 transition-all text-sm"
+                    />
+                  </div>
+                </>
                 )}
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold text-white/30 uppercase tracking-[0.1em] ml-1" htmlFor="email">
+                  <label className="text-[9px] font-bold text-on-surface-variant/30 uppercase tracking-[0.1em] ml-1" htmlFor="email">
                     Email Address
                   </label>
                   <input
@@ -223,13 +247,13 @@ export default function Login() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full h-12 px-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder:text-white/20 outline-none focus:border-accent/50 focus:bg-white/10 transition-all text-sm"
+                    className="w-full h-12 px-4 border border-outline rounded-xl bg-on-background/5 text-on-surface placeholder:text-on-surface-variant/20 outline-none focus:border-accent/50 focus:bg-on-background/10 transition-all text-sm"
                   />
                 </div>
 
                 {/* Password */}
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold text-white/30 uppercase tracking-[0.1em] ml-1" htmlFor="password">
+                  <label className="text-[9px] font-bold text-on-surface-variant/30 uppercase tracking-[0.1em] ml-1" htmlFor="password">
                     Password
                   </label>
                   <input
@@ -240,14 +264,14 @@ export default function Login() {
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full h-12 px-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder:text-white/20 outline-none focus:border-accent/50 focus:bg-white/10 transition-all text-sm"
+                    className="w-full h-12 px-4 border border-outline rounded-xl bg-on-background/5 text-on-surface placeholder:text-on-surface-variant/20 outline-none focus:border-accent/50 focus:bg-on-background/10 transition-all text-sm"
                   />
                 </div>
 
                 {/* Confirm Password (signup only) */}
                 {mode === 'signup' && (
                   <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-white/30 uppercase tracking-[0.1em] ml-1" htmlFor="confirm-password">
+                    <label className="text-[9px] font-bold text-on-surface-variant/30 uppercase tracking-[0.1em] ml-1" htmlFor="confirm-password">
                       Confirm Password
                     </label>
                     <input
@@ -258,7 +282,7 @@ export default function Login() {
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
-                      className="w-full h-12 px-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder:text-white/20 outline-none focus:border-accent/50 focus:bg-white/10 transition-all text-sm"
+                      className="w-full h-12 px-4 border border-outline rounded-xl bg-on-background/5 text-on-surface placeholder:text-on-surface-variant/20 outline-none focus:border-accent/50 focus:bg-on-background/10 transition-all text-sm"
                     />
                   </div>
                 )}
@@ -295,11 +319,11 @@ export default function Login() {
 
             {/* Footer */}
             <div className="mt-8 text-center">
-              <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em]">
+              <p className="text-[10px] font-bold text-on-surface-variant/20 uppercase tracking-[0.3em]">
                 {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
                 <button
                   onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); }}
-                  className="text-accent hover:text-white transition-colors underline underline-offset-2"
+                  className="text-accent hover:text-on-surface transition-colors underline underline-offset-2"
                 >
                   {mode === 'signin' ? 'Create one' : 'Sign in'}
                 </button>

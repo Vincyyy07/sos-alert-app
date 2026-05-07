@@ -52,8 +52,8 @@ export default function Tracking() {
   if (!alertId) return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-2">Invalid Tracking Link</h1>
-        <p className="text-white/40">Please ask the sender for a valid SOS alert URL.</p>
+        <h1 className="text-2xl font-bold text-on-background mb-2">Invalid Tracking Link</h1>
+        <p className="text-on-surface-variant">Please ask the sender for a valid SOS alert URL.</p>
       </div>
     </div>
   );
@@ -72,10 +72,10 @@ export default function Tracking() {
             <span className="material-symbols-outlined text-red-500 font-fill animate-pulse">warning</span>
             <div>
               <h1 className="text-sm font-bold text-white tracking-widest uppercase">
-                Beacon {alertId.slice(0, 8)}…
+                SOS Alert Active
               </h1>
               <span className="text-[9px] text-white/40 uppercase tracking-[0.2em]">
-                {alert?.userName || 'Unknown'} · {elapsed || 'Loading…'}
+                {alert?.userName || 'User'} · ID: {alertId.slice(0, 8).toUpperCase()}
               </span>
             </div>
           </div>
@@ -94,6 +94,7 @@ export default function Tracking() {
               defaultCenter={{ lat, lng }}
               defaultZoom={15}
               center={{ lat, lng }}
+              mapId="DEMO_MAP_ID"
               className="w-full h-full"
               disableDefaultUI={true}
               gestureHandling="greedy"
@@ -108,16 +109,16 @@ export default function Tracking() {
               </AdvancedMarker>
             </Map>
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-white/[0.02] text-white/20 p-10 text-center gap-4">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-on-background/[0.02] text-on-surface-variant/20 p-10 text-center gap-4">
               <span className="material-symbols-outlined text-4xl">
                 {hasLocation ? 'map_off' : 'location_searching'}
               </span>
               <div className="space-y-1">
-                <p className="text-xs font-bold uppercase tracking-widest text-white/40">
+                <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
                   {hasLocation ? 'Maps API key not set' : 'Waiting for location…'}
                 </p>
                 {hasLocation && (
-                  <p className="text-[10px] font-mono text-white/20">
+                  <p className="text-[10px] font-mono text-on-surface-variant/40">
                     Set VITE_GOOGLE_MAPS_KEY in .env
                   </p>
                 )}
@@ -149,23 +150,26 @@ export default function Tracking() {
           )}
         </main>
 
-        {/* Action Buttons */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-sm px-6 z-20 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <button
+        {/* Bottom Control Bar */}
+        <div className="bg-black/80 backdrop-blur-xl border-t border-white/5 p-4 shrink-0 z-20">
+          <div className="grid grid-cols-2 gap-3 w-full max-w-sm mx-auto">
+            <a
+              href={hasLocation ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => setAcknowledged(true)}
-              className={`bg-black/70 backdrop-blur-xl border text-white flex items-center justify-center gap-2 h-14 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${
-                acknowledged ? 'border-green-500/40 text-green-400' : 'border-white/10 hover:bg-white/5'
+              className={`border flex items-center justify-center gap-2 h-14 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${
+                acknowledged ? 'border-green-500/40 text-green-400 bg-green-500/10' : 'border-white/10 text-white hover:bg-white/5'
               }`}
             >
-              <span className="material-symbols-outlined text-sm text-accent">directions</span>
-              {acknowledged ? 'En Route ✓' : 'En Route'}
-            </button>
+              <span className="material-symbols-outlined text-sm md:text-base text-accent">directions</span>
+              {acknowledged ? 'Routing...' : 'En Route'}
+            </a>
             <a
-              href={`tel:`}
-              className="bg-black/70 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center gap-2 h-14 rounded-2xl text-[10px] font-bold uppercase tracking-wider hover:bg-white/5 transition-all active:scale-95"
+              href={alert?.userPhone ? `tel:${alert.userPhone}` : '#'}
+              className="border border-white/10 text-white flex items-center justify-center gap-2 h-14 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-all active:scale-95"
             >
-              <span className="material-symbols-outlined text-sm text-accent">call</span>
+              <span className="material-symbols-outlined text-sm md:text-base text-accent">call</span>
               Call User
             </a>
           </div>

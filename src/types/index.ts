@@ -23,6 +23,7 @@ export interface Alert {
   id: string;
   userId: string;
   userName: string;
+  userPhone?: string;
   status: 'active' | 'resolved' | 'cancelled';
   currentLevel: number;
   timestamp: any; // Firestore Timestamp

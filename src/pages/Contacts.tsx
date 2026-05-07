@@ -54,11 +54,11 @@ const PRIORITY_CONFIG: Record<number, { avatar: string; badge: string; accent: s
 };
 
 const DEFAULT_CONFIG = {
-  avatar:    'bg-white/10 text-white/50',
-  badge:     'border-white/20 text-white/40 bg-white/5',
-  accent:    'border-l-white/20',
-  cardBg:    'bg-white/[0.03]',
-  nameColor: 'text-white/70',
+  avatar:    'bg-on-background/10 text-on-surface-variant',
+  badge:     'border-outline text-on-surface-variant bg-on-background/5',
+  accent:    'border-l-outline',
+  cardBg:    'bg-on-background/[0.03]',
+  nameColor: 'text-on-surface/70',
   label:     'Other',
   icon:      'person'
 };
@@ -256,12 +256,12 @@ export default function Contacts() {
     return (
       <div className="pb-32 space-y-6">
         <div className="flex items-center gap-4">
-          <button onClick={() => setIsReordering(false)} className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
+          <button onClick={() => setIsReordering(false)} className="w-9 h-9 rounded-xl bg-on-background/5 flex items-center justify-center hover:bg-on-background/10 transition-all text-on-background">
             <span className="material-symbols-outlined text-sm">arrow_back</span>
           </button>
           <div>
-            <h2 className="text-xl font-semibold text-white">Reorder Contacts</h2>
-            <p className="text-[10px] text-white/30 uppercase tracking-widest">Drag or tap arrows to reorder</p>
+            <h2 className="text-xl font-semibold text-on-background">Reorder Contacts</h2>
+            <p className="text-[10px] text-on-surface-variant uppercase tracking-widest">Drag or tap arrows to reorder</p>
           </div>
         </div>
 
@@ -269,13 +269,13 @@ export default function Contacts() {
           {reorderList.map((c, i) => {
             const pc = getPC(c.priority);
             return (
-              <div key={c.id} className={cn('glass-panel rounded-2xl p-4 flex items-center gap-4 border-l-2 border border-white/5', pc.accent, pc.cardBg)}>
+              <div key={c.id} className={cn('glass-panel rounded-2xl p-4 flex items-center gap-4 border-l-2 border border-outline', pc.accent, pc.cardBg)}>
                 <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0', pc.avatar)}>
                   {c.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={cn('font-bold text-sm truncate', pc.nameColor)}>{c.name}</p>
-                  <p className="text-[10px] text-white/40 font-mono">{c.phone}</p>
+                  <p className="text-[10px] text-on-surface-variant font-mono">{c.phone}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 mr-2">
                   <span className={cn('text-[9px] px-2 py-0.5 rounded border font-bold uppercase tracking-widest', pc.badge)}>
@@ -296,7 +296,7 @@ export default function Contacts() {
         </div>
 
         <div className="flex gap-3">
-          <button onClick={() => setIsReordering(false)} className="flex-1 h-12 rounded-xl bg-white/5 border border-white/5 text-xs font-bold uppercase tracking-widest">Cancel</button>
+          <button onClick={() => setIsReordering(false)} className="flex-1 h-12 rounded-xl bg-on-background/5 border border-outline text-xs font-bold uppercase tracking-widest text-on-background">Cancel</button>
           <button onClick={saveReorder} className="flex-1 h-12 bg-accent text-black rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-accent/20">Save Order</button>
         </div>
       </div>
@@ -311,10 +311,10 @@ export default function Contacts() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h2 className="text-3xl font-light text-white tracking-tight">
+          <h2 className="text-3xl font-light text-on-background tracking-tight">
             Security <span className="text-accent font-medium">Chain</span>
           </h2>
-          <p className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-bold">Escalation protocol management</p>
+          <p className="text-on-surface-variant text-[11px] uppercase tracking-[0.2em] font-bold">Escalation protocol management</p>
         </div>
         {!isAdding && (
           <button onClick={() => setIsAdding(true)} className="hidden md:flex shrink-0 items-center gap-2 px-5 py-3 bg-red-600 text-white rounded-xl shadow-lg text-xs font-bold uppercase tracking-widest hover:bg-red-500 transition-all">
@@ -330,11 +330,11 @@ export default function Contacts() {
           <span className="material-symbols-outlined text-accent font-fill">security</span>
         </div>
         <div className="flex-1">
-          <h3 className="text-xs font-bold text-white/80 uppercase tracking-widest">Active Monitoring</h3>
-          <p className="text-[10px] text-white/30 uppercase tracking-tighter">{contacts.length} guardian{contacts.length !== 1 ? 's' : ''} configured</p>
+          <h3 className="text-xs font-bold text-on-background/80 uppercase tracking-widest">Active Monitoring</h3>
+          <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">{contacts.length} guardian{contacts.length !== 1 ? 's' : ''} configured</p>
         </div>
         {contacts.length > 1 && (
-          <button onClick={openReorder} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[10px] font-bold uppercase tracking-widest text-white/50 hover:text-white">
+          <button onClick={openReorder} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-on-background/5 border border-outline hover:bg-on-background/10 transition-all text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-background">
             <span className="material-symbols-outlined text-xs">swap_vert</span>Reorder
           </button>
         )}
@@ -348,45 +348,48 @@ export default function Contacts() {
           const isMenuOpen = activeMenuId === contact.id;
 
           return (
-            <div key={contact.id} className={cn('relative glass-panel rounded-3xl p-6 border border-white/5 transition-all hover:bg-white/[0.04]', pc.cardBg)}>
-              {/* Header Badge: PX • Timing */}
-              <div className="absolute top-5 right-5 flex items-center gap-2">
-                <span className={cn('text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-[0.15em] bg-black/40 border border-white/10', pc.nameColor)}>
-                  P{contact.priority} • {getTimingLabel(contact.priority).toUpperCase()}
-                </span>
+            <div key={contact.id} className={cn('relative glass-panel rounded-2xl md:rounded-3xl p-5 md:p-6 border border-outline transition-all hover:bg-on-background/[0.04]', pc.cardBg)}>
+              
+              {/* Header: Avatar, Info, and 3-dots */}
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="flex items-start gap-4">
+                  {/* Avatar */}
+                  <div className={cn('w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center font-black text-lg md:text-xl shadow-2xl shrink-0', pc.avatar)}>
+                    {initials}
+                  </div>
+
+                  {/* Info Section */}
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <h3 className="font-bold text-base md:text-lg text-on-surface leading-tight tracking-tight truncate pr-2">{contact.name}</h3>
+                    
+                    <div className="flex flex-wrap items-center gap-2 text-on-surface-variant text-[10px] md:text-[11px] mt-1 font-medium">
+                      <span>{contact.phone}</span>
+                      <span className="w-1 h-1 rounded-full bg-outline shrink-0 hidden md:block"></span>
+                      <span className="uppercase tracking-[0.15em] truncate">{contact.relationship}</span>
+                    </div>
+                  </div>
+                </div>
+
                 <button
                   onClick={() => setActiveMenuId(isMenuOpen ? null : contact.id)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-all ml-1"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-on-background/10 text-on-surface-variant hover:text-on-background transition-all shrink-0 -mt-1 -mr-1"
                 >
                   <span className="material-symbols-outlined text-base">more_vert</span>
                 </button>
               </div>
 
-              <div className="flex items-start gap-5">
-                {/* Avatar (Square Gradient) */}
-                <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-2xl shrink-0', pc.avatar)}>
-                  {initials}
-                </div>
-
-                {/* Info Section */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <h3 className="font-bold text-lg text-white leading-none tracking-tight truncate">{contact.name}</h3>
+              {/* Status Row: Priority Badge + Email */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                <span className={cn('text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-[0.15em] bg-black/40 border border-white/10', pc.nameColor)}>
+                  P{contact.priority} • {getTimingLabel(contact.priority).toUpperCase()}
+                </span>
+                
+                {contact.email && (
+                  <div className="flex items-center gap-1.5 text-green-500/80 text-[10px] font-semibold">
+                    <span className="material-symbols-outlined text-sm shrink-0">mail</span>
+                    <span className="truncate max-w-[130px] md:max-w-[180px]">{contact.email}</span>
                   </div>
-                  
-                  <div className="flex items-center gap-2 text-white/40 text-[11px] mb-2 font-medium">
-                    <span>{contact.phone}</span>
-                    <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
-                    <span className="uppercase tracking-[0.15em] truncate">{contact.relationship}</span>
-                  </div>
-
-                  {contact.email && (
-                    <div className="flex items-center gap-2 text-green-500/80 text-[11px] font-semibold">
-                      <span className="material-symbols-outlined text-sm shrink-0">mail</span>
-                      <span className="truncate">{contact.email}</span>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
               {/* Card Footer: Separator + Timing + Toggle */}
@@ -506,9 +509,9 @@ export default function Contacts() {
 
       {/* ── Edit Details Modal ── */}
       {editingContact && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setEditingContact(null); }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-24 md:pb-4" onClick={e => { if (e.target === e.currentTarget) setEditingContact(null); }}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setEditingContact(null)} />
-          <div className="relative w-full max-w-md glass-panel rounded-2xl p-6 shadow-2xl border border-white/10">
+          <div className="relative w-full max-w-md glass-panel rounded-2xl p-6 shadow-2xl border border-white/10 max-h-[85vh] overflow-y-auto hide-scrollbar">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xs font-bold text-white uppercase tracking-[0.3em]">Edit Contact</h3>
               <button onClick={() => setEditingContact(null)} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40">

@@ -10,9 +10,11 @@ export const sosService = {
   trigger(user: User): Promise<string | undefined> {
     return new Promise((resolve) => {
       const onPosition = async (pos?: GeolocationPosition) => {
+        const profile = await dbService.getDocument('users', user.uid);
         const baseData: Record<string, any> = {
           userId:       user.uid,
           userName:     user.displayName || user.email || 'User',
+          userPhone:    profile?.phoneNumber || '',
           status:       'active',
           currentLevel: 1,
           timestamp:    serverTimestamp(),
