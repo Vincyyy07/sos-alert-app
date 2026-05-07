@@ -14,7 +14,7 @@ export interface Contact {
   phone: string;
   email?: string;          // For email notifications
   relationship: string;
-  priority: 1 | 2 | 3;
+  priority: number;          // 1 = immediate, 2+ = escalation groups
   receiveEscalations: boolean;
   delayMinutes: number;
 }

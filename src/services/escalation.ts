@@ -3,9 +3,24 @@ import { emailService } from './email';
 import { dbService } from './db';
 
 export interface EscalationStatus {
-  level: number;                  // Current active escalation level (1 | 2 | 3)
+  level: number;                  // Current highest priority group being notified
   notifiedIds: string[];          // Contact IDs already notified
-  nextLevelIn: number | null;     // Seconds until next level fires (null = done)
+  nextLevelIn: number | null;     // Seconds until next group fires (null = done)
+}
+
+/**
+ * Returns the delay in seconds for a given priority level.
+ * P1 → 0s (immediate)
+ * P2 → 60s  (+1 min)
+ * P3 → 120s (+2 mins)
+ * P4 → 240s (+4 mins)
+ * P5 → 300s (+5 mins)
+ * Pn → (n-1) * 60s
+ */
+function getDelaySeconds(priority: number): number {
+  if (priority <= 1) return 0;
+  const delays: Record<number, number> = { 2: 60, 3: 120, 4: 240, 5: 300 };
+  return delays[priority] ?? (priority - 1) * 60;
 }
 
 class EscalationEngine {
@@ -16,9 +31,9 @@ class EscalationEngine {
 
   /**
    * Start the escalation sequence.
-   * P1 contacts → immediate
-   * P2 contacts → after 2 minutes
-   * P3 contacts → after 5 minutes (from start)
+   * Groups contacts by priority number.
+   * All contacts in the same group are notified at the same time.
+   * Timing is calculated relative to SOS start using getDelaySeconds().
    */
   start(
     alertId:  string,
@@ -30,56 +45,60 @@ class EscalationEngine {
     this.alertId  = alertId;
     this.onUpdate = onUpdate;
 
-    const p1 = contacts.filter(c => c.priority === 1 && c.receiveEscalations !== false);
-    const p2 = contacts.filter(c => c.priority === 2 && c.receiveEscalations !== false);
-    const p3 = contacts.filter(c => c.priority === 3 && c.receiveEscalations !== false);
-
     const trackingUrl = `${window.location.origin}/track?alertId=${alertId}`;
     const timestamp   = new Date().toLocaleString();
 
-    // ── Level 1 (immediate) ───────────────────────────────────────────────
-    this.notifyContacts(p1, trackingUrl, userName, timestamp, 1);
-    this.setStatus({
-      level:       1,
-      notifiedIds: p1.map(c => c.id),
-      nextLevelIn: p2.length ? 120 : (p3.length ? 300 : null),
+    // Group contacts by priority, filter those that receive escalations
+    const eligible = contacts.filter(c => c.receiveEscalations !== false && c.email);
+    const groups = new Map<number, Contact[]>();
+    for (const contact of eligible) {
+      const p = contact.priority;
+      if (!groups.has(p)) groups.set(p, []);
+      groups.get(p)!.push(contact);
+    }
+
+    // Sort groups ascending by priority number
+    const sortedPriorities = [...groups.keys()].sort((a, b) => a - b);
+    if (sortedPriorities.length === 0) return;
+
+    let notifiedIds: string[] = [];
+
+    sortedPriorities.forEach((priority, idx) => {
+      const group = groups.get(priority)!;
+      const delaySec = getDelaySeconds(priority);
+      const nextPriority = sortedPriorities[idx + 1];
+      const nextDelaySec = nextPriority !== undefined ? getDelaySeconds(nextPriority) : null;
+
+      if (delaySec === 0) {
+        // Fire immediately
+        this.notifyContacts(group, trackingUrl, userName, timestamp, priority);
+        notifiedIds = [...notifiedIds, ...group.map(c => c.id)];
+        dbService.updateDocument('alerts', alertId, { currentLevel: priority });
+        this.setStatus({
+          level: priority,
+          notifiedIds,
+          nextLevelIn: nextDelaySec !== null ? nextDelaySec : null,
+        });
+      } else {
+        // Schedule this group
+        const capturedNotifiedIds = [...notifiedIds];
+        this.scheduleAt(delaySec, () => {
+          this.notifyContacts(group, trackingUrl, userName, timestamp, priority);
+          const newNotified = [...capturedNotifiedIds, ...group.map(c => c.id)];
+          dbService.updateDocument('alerts', alertId, { currentLevel: priority });
+          this.setStatus({
+            level: priority,
+            notifiedIds: newNotified,
+            nextLevelIn: nextDelaySec !== null ? (nextDelaySec - delaySec) : null,
+          });
+        });
+      }
     });
 
-    // ── Level 2 (2 min) ──────────────────────────────────────────────────
-    if (p2.length) {
-      this.startCountdown(120, () => {
-        this.notifyContacts(p2, trackingUrl, userName, timestamp, 2);
-        dbService.updateDocument('alerts', alertId, { currentLevel: 2 });
-        this.setStatus({
-          level:       2,
-          notifiedIds: [...this.status.notifiedIds, ...p2.map(c => c.id)],
-          nextLevelIn: p3.length ? 180 : null,
-        });
-
-        // ── Level 3 (3 more min after L2) ──────────────────────────────
-        if (p3.length) {
-          this.startCountdown(180, () => {
-            this.notifyContacts(p3, trackingUrl, userName, timestamp, 3);
-            dbService.updateDocument('alerts', alertId, { currentLevel: 3 });
-            this.setStatus({
-              level:       3,
-              notifiedIds: [...this.status.notifiedIds, ...p3.map(c => c.id)],
-              nextLevelIn: null,
-            });
-          });
-        }
-      });
-    } else if (p3.length) {
-      // No P2 — go directly to P3 after 5 min
-      this.startCountdown(300, () => {
-        this.notifyContacts(p3, trackingUrl, userName, timestamp, 3);
-        dbService.updateDocument('alerts', alertId, { currentLevel: 3 });
-        this.setStatus({
-          level:       3,
-          notifiedIds: [...this.status.notifiedIds, ...p3.map(c => c.id)],
-          nextLevelIn: null,
-        });
-      });
+    // Kick off the live countdown to the next group
+    if (sortedPriorities.length > 1) {
+      const firstNextDelay = getDelaySeconds(sortedPriorities[1]);
+      this.startCountdown(firstNextDelay);
     }
   }
 
@@ -115,20 +134,25 @@ class EscalationEngine {
     }
   }
 
-  /**
-   * Run a 1-second countdown and call `onDone` when it reaches 0.
-   * Keeps `status.nextLevelIn` updated so the UI can show a live timer.
-   */
-  private startCountdown(seconds: number, onDone: () => void) {
-    let remaining = seconds;
+  /** Schedule a one-shot callback after `seconds` seconds. */
+  private scheduleAt(seconds: number, onDone: () => void) {
+    const id = window.setTimeout(onDone, seconds * 1000);
+    this.timers.push(id);
+  }
 
+  /**
+   * Run a 1-second countdown and keep `status.nextLevelIn` updated.
+   * This is display-only — actual firing is handled by scheduleAt.
+   */
+  private startCountdown(totalSeconds: number) {
+    let remaining = totalSeconds;
     const tick = window.setInterval(() => {
       remaining--;
-      this.setStatus({ ...this.status, nextLevelIn: remaining });
       if (remaining <= 0) {
         clearInterval(tick);
-        onDone();
+        return;
       }
+      this.setStatus({ ...this.status, nextLevelIn: remaining });
     }, 1000);
     this.timers.push(tick);
   }
