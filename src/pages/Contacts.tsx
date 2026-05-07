@@ -47,13 +47,25 @@ export default function Contacts() {
 
   return (
     <div className="pb-32 space-y-8">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-light text-white tracking-tight">
-          Security <span className="text-accent font-medium">Chain</span>
-        </h2>
-        <p className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-bold">
-          Escalation protocol management
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-3xl font-light text-white tracking-tight">
+            Security <span className="text-accent font-medium">Chain</span>
+          </h2>
+          <p className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-bold">
+            Escalation protocol management
+          </p>
+        </div>
+        {/* Desktop Add Button */}
+        {!isAdding && (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="hidden md:flex shrink-0 items-center gap-2 px-5 py-3 bg-red-600 text-white rounded-xl shadow-lg text-xs font-bold uppercase tracking-widest hover:bg-red-500 transition-all"
+          >
+            <span className="material-symbols-outlined text-base">add</span>
+            Add Guardian
+          </button>
+        )}
       </div>
 
       {/* Status Bar */}
@@ -71,7 +83,7 @@ export default function Contacts() {
       </div>
 
       {/* Contact List */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {contacts.map((contact, idx) => (
           <div key={contact.id} className="glass-panel rounded-2xl p-6 transition-all hover:bg-white/[0.05] group">
             <div className="flex flex-col gap-4">
@@ -240,9 +252,10 @@ export default function Contacts() {
           </form>
         </div>
       ) : (
+        /* Mobile FAB */
         <button
           onClick={() => setIsAdding(true)}
-          className="fixed bottom-24 right-6 w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-90 transition-transform sos-glow"
+          className="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-90 transition-transform sos-glow"
         >
           <span className="material-symbols-outlined text-2xl">add</span>
         </button>

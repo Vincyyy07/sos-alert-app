@@ -17,43 +17,105 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const emailOk = emailService.isConfigured();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-on-background pb-24">
-      {/* Top Header */}
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-14 bg-black/40 backdrop-blur-md border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-bold text-white shadow-lg">S</div>
-          <h1 className="text-xl font-semibold tracking-tight">
+    <div className="min-h-screen bg-background text-on-background flex flex-col md:flex-row">
+
+      {/* ── Desktop Sidebar ─────────────────────────────────────── */}
+      <aside className="hidden md:flex flex-col w-64 shrink-0 fixed top-0 left-0 h-screen z-50 border-r border-white/5 bg-black/60 backdrop-blur-xl">
+        {/* Brand */}
+        <div className="flex items-center gap-3 px-6 h-16 border-b border-white/5">
+          <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-bold text-white shadow-lg text-sm">S</div>
+          <h1 className="text-lg font-semibold tracking-tight">
             GUARDIAN<span className="text-red-500">OS</span>
           </h1>
         </div>
 
-        <div className="hidden md:flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-white/40">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
-            ENCRYPTED LINK
+        {/* User chip */}
+        {user && (
+          <div className="mx-4 mt-4 flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-black font-bold text-xs shrink-0">
+              {(user.displayName || user.email || 'U')[0].toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-white truncate">{user.displayName || 'User'}</p>
+              <p className="text-[9px] text-white/30 truncate">{user.email}</p>
+            </div>
+            {!emailOk && (
+              <span className="w-2 h-2 bg-yellow-400 rounded-full shrink-0" title="Email not configured" />
+            )}
           </div>
-          {user && <span className="text-accent/60 truncate max-w-[180px]">{user.email}</span>}
+        )}
+
+        {/* Status indicator */}
+        <div className="mx-4 mt-3 flex items-center gap-2 px-3 py-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">Encrypted Link</span>
         </div>
 
+        {/* Nav links */}
+        <nav className="flex-1 flex flex-col gap-1 px-3 mt-4">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 group relative",
+                  isActive
+                    ? "bg-white/10 text-white"
+                    : "text-white/40 hover:text-white hover:bg-white/5"
+                )}
+              >
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-red-500 rounded-r-full" />
+                )}
+                <span className={cn("material-symbols-outlined text-xl", isActive && "font-fill")}>
+                  {item.icon}
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-widest">{item.label}</span>
+                {item.path === '/profile' && !emailOk && (
+                  <span className="ml-auto w-2 h-2 bg-yellow-400 rounded-full" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Bottom of sidebar */}
+        <div className="px-6 py-5 border-t border-white/5">
+          <p className="text-[8px] font-mono text-white/15 uppercase tracking-widest">GuardianOS · v2.4.0</p>
+        </div>
+      </aside>
+
+      {/* ── Mobile Top Header ───────────────────────────────────── */}
+      <header className="md:hidden fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 h-14 bg-black/60 backdrop-blur-md border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center font-bold text-white text-xs shadow-lg">S</div>
+          <h1 className="text-lg font-semibold tracking-tight">
+            GUARDIAN<span className="text-red-500">OS</span>
+          </h1>
+        </div>
         <Link
           to="/profile"
-          className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/60"
+          className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/60"
           title="Profile"
         >
-          <span className="material-symbols-outlined">person</span>
-          {/* Red dot if email not configured */}
+          <span className="material-symbols-outlined text-lg">person</span>
           {!emailOk && (
-            <span className="absolute top-1 right-1 w-2 h-2 bg-yellow-400 rounded-full border border-background"></span>
+            <span className="absolute top-1 right-1 w-2 h-2 bg-yellow-400 rounded-full border border-background" />
           )}
         </Link>
       </header>
 
-      <main className="pt-20 px-6 max-w-4xl mx-auto w-full flex-grow">
-        {children}
-      </main>
+      {/* ── Main Content ────────────────────────────────────────── */}
+      <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
+        <main className="flex-grow pt-20 md:pt-10 px-6 md:px-10 pb-28 md:pb-10 w-full max-w-5xl mx-auto">
+          {children}
+        </main>
+      </div>
 
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-4 pt-2 bg-black border-t border-white/5">
+      {/* ── Mobile Bottom Nav ───────────────────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-4 pt-2 bg-black/90 border-t border-white/5 backdrop-blur-xl">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -69,9 +131,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {item.icon}
               </span>
               <span className="text-[9px] uppercase tracking-widest font-bold mt-1">{item.label}</span>
-              {/* Badge for profile when email not configured */}
               {item.path === '/profile' && !emailOk && (
-                <span className="absolute top-0 right-2 w-2 h-2 bg-yellow-400 rounded-full border border-background"></span>
+                <span className="absolute top-0 right-2 w-2 h-2 bg-yellow-400 rounded-full border border-background" />
               )}
             </Link>
           );

@@ -113,120 +113,246 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Hero SOS Section */}
-      <section className="flex flex-col items-center justify-center py-10 relative overflow-hidden min-h-[500px]">
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
-          <div className="radar-ring w-[280px] h-[280px]"></div>
-          <div className="radar-ring w-[440px] h-[440px]"></div>
-          <div className="radar-ring w-[600px] h-[600px]"></div>
-        </div>
-
-        <div className="z-10 flex flex-col items-center">
-          <button
-            onMouseDown={handleStartHold}
-            onMouseUp={handleEndHold}
-            onMouseLeave={handleEndHold}
-            onTouchStart={handleStartHold}
-            onTouchEnd={handleEndHold}
-            disabled={triggering}
-            className={cn(
-              "w-64 h-64 rounded-full sos-glow bg-red-600/90 text-white flex flex-col items-center justify-center relative active:scale-95 transition-transform overflow-hidden",
-              triggering && "animate-pulse cursor-not-allowed"
-            )}
-          >
-            <div
-              className="absolute bottom-0 left-0 w-full bg-white/20 transition-all duration-75"
-              style={{ height: `${holdProgress}%` }}
-            />
-            <div className="text-6xl font-black italic mb-1 tracking-tighter z-10">
-              {triggering ? '...' : 'SOS'}
-            </div>
-            <div className="text-[10px] font-bold tracking-[0.2em] opacity-80 uppercase z-10">
-              {triggering ? 'Triggering...' : 'Hold to Trigger'}
-            </div>
-          </button>
-
-          <div className="mt-12 text-center">
-            <h2 className="text-2xl font-light text-white/80">
-              Everything is currently <span className="text-accent font-medium">safe</span>.
-            </h2>
-            <p className="text-white/30 text-xs mt-2 uppercase tracking-widest font-bold">
-              Guardian monitoring active
-            </p>
+      {/* ════════════════════════════════════════════════
+          MOBILE LAYOUT (hidden on lg+) — EXACT ORIGINAL
+          ════════════════════════════════════════════════ */}
+      <div className="lg:hidden">
+        {/* Hero SOS Section */}
+        <section className="flex flex-col items-center justify-center py-10 relative overflow-hidden min-h-[500px]">
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
+            <div className="radar-ring w-[280px] h-[280px]"></div>
+            <div className="radar-ring w-[440px] h-[440px]"></div>
+            <div className="radar-ring w-[600px] h-[600px]"></div>
           </div>
-        </div>
-      </section>
 
-      {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Check-in Card */}
-        <div className="glass-panel rounded-2xl p-6 flex flex-col gap-4">
-          <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Safety Check-in</div>
-          <div className="flex items-center justify-between">
-            <span className="text-3xl font-light">
-              {nextCheckIn ? `${nextCheckIn.durationMinutes}:00` : '00:00'}
-            </span>
-            <span className="text-[10px] px-2 py-1 rounded bg-white/10 text-white/60">
-              {nextCheckIn ? 'MONITORING' : 'IDLE'}
-            </span>
-          </div>
-          <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
-            <div className="bg-accent h-full transition-all duration-500" style={{ width: nextCheckIn ? '70%' : '0%' }}></div>
-          </div>
-          <a href="/checkin" className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest mt-2 text-center block">
-            {nextCheckIn ? 'Manage Check-in' : 'Start Check-in'}
-          </a>
-        </div>
+          <div className="z-10 flex flex-col items-center">
+            <button
+              onMouseDown={handleStartHold}
+              onMouseUp={handleEndHold}
+              onMouseLeave={handleEndHold}
+              onTouchStart={handleStartHold}
+              onTouchEnd={handleEndHold}
+              disabled={triggering}
+              className={cn(
+                "w-64 h-64 rounded-full sos-glow bg-red-600/90 text-white flex flex-col items-center justify-center relative active:scale-95 transition-transform overflow-hidden",
+                triggering && "animate-pulse cursor-not-allowed"
+              )}
+            >
+              <div
+                className="absolute bottom-0 left-0 w-full bg-white/20 transition-all duration-75"
+                style={{ height: `${holdProgress}%` }}
+              />
+              <div className="text-6xl font-black italic mb-1 tracking-tighter z-10">
+                {triggering ? '...' : 'SOS'}
+              </div>
+              <div className="text-[10px] font-bold tracking-[0.2em] opacity-80 uppercase z-10">
+                {triggering ? 'Triggering...' : 'Hold to Trigger'}
+              </div>
+            </button>
 
-        {/* Map Preview */}
-        <div className="glass-panel rounded-2xl overflow-hidden flex flex-col h-full min-h-[200px]">
-          <div className="relative h-full bg-zinc-900 overflow-hidden flex items-center justify-center">
-            <div className="flex flex-col items-center gap-2 opacity-30">
-              <span className="material-symbols-outlined text-4xl">my_location</span>
-              <p className="text-[10px] font-bold uppercase tracking-widest">GPS Ready</p>
-            </div>
-            <div className="absolute bottom-3 left-3">
-              <div className="bg-black/60 px-2 py-1 rounded text-[8px] border border-white/10 font-mono text-white/80 uppercase">Standby</div>
+            <div className="mt-12 text-center">
+              <h2 className="text-2xl font-light text-white/80">
+                Everything is currently <span className="text-accent font-medium">safe</span>.
+              </h2>
+              <p className="text-white/30 text-xs mt-2 uppercase tracking-widest font-bold">
+                Guardian monitoring active
+              </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Guardians Summary */}
-        <div className="glass-panel rounded-2xl p-6 flex flex-col">
-          <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-4">Guardians</div>
-          <div className="space-y-3">
-            {contacts.slice(0, 3).map((contact, idx) => (
-              <div key={contact.id} className="flex items-center gap-3">
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold",
-                  idx === 0 ? "bg-gradient-to-br from-accent to-blue-600" : "bg-white/10"
-                )}>
-                  {contact.name.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{contact.name}</div>
-                  <div className="text-[8px] text-accent uppercase tracking-tighter flex items-center gap-1">
-                    P{contact.priority}
-                    {contact.email
-                      ? <span className="text-green-400">• Email ✓</span>
-                      : <span className="text-yellow-500">• No email</span>
-                    }
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Check-in Card */}
+          <div className="glass-panel rounded-2xl p-6 flex flex-col gap-4">
+            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Safety Check-in</div>
+            <div className="flex items-center justify-between">
+              <span className="text-3xl font-light">
+                {nextCheckIn ? `${nextCheckIn.durationMinutes}:00` : '00:00'}
+              </span>
+              <span className="text-[10px] px-2 py-1 rounded bg-white/10 text-white/60">
+                {nextCheckIn ? 'MONITORING' : 'IDLE'}
+              </span>
+            </div>
+            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+              <div className="bg-accent h-full transition-all duration-500" style={{ width: nextCheckIn ? '70%' : '0%' }}></div>
+            </div>
+            <a href="/checkin" className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest mt-2 text-center block">
+              {nextCheckIn ? 'Manage Check-in' : 'Start Check-in'}
+            </a>
+          </div>
+
+          {/* Map Preview */}
+          <div className="glass-panel rounded-2xl overflow-hidden flex flex-col h-full min-h-[200px]">
+            <div className="relative h-full bg-zinc-900 overflow-hidden flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2 opacity-30">
+                <span className="material-symbols-outlined text-4xl">my_location</span>
+                <p className="text-[10px] font-bold uppercase tracking-widest">GPS Ready</p>
+              </div>
+              <div className="absolute bottom-3 left-3">
+                <div className="bg-black/60 px-2 py-1 rounded text-[8px] border border-white/10 font-mono text-white/80 uppercase">Standby</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Guardians Summary */}
+          <div className="glass-panel rounded-2xl p-6 flex flex-col">
+            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-4">Guardians</div>
+            <div className="space-y-3">
+              {contacts.slice(0, 3).map((contact, idx) => (
+                <div key={contact.id} className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold",
+                    idx === 0 ? "bg-gradient-to-br from-accent to-blue-600" : "bg-white/10"
+                  )}>
+                    {contact.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{contact.name}</div>
+                    <div className="text-[8px] text-accent uppercase tracking-tighter flex items-center gap-1">
+                      P{contact.priority}
+                      {contact.email
+                        ? <span className="text-green-400">• Email ✓</span>
+                        : <span className="text-yellow-500">• No email</span>
+                      }
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {contacts.length === 0 && (
-              <p className="text-[10px] text-white/30 italic">No guardians configured.</p>
-            )}
+              ))}
+              {contacts.length === 0 && (
+                <p className="text-[10px] text-white/30 italic">No guardians configured.</p>
+              )}
+            </div>
+            <a href="/contacts" className="mt-auto w-full py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest text-center block mt-4">
+              Manage
+            </a>
           </div>
-          <a href="/contacts" className="mt-auto w-full py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest text-center block mt-4">
-            Manage
-          </a>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════
+          DESKTOP LAYOUT (hidden below lg) — TWO COLUMNS
+          ════════════════════════════════════════════════ */}
+      <div className="hidden lg:flex gap-6 items-start">
+
+        {/* Left column: SOS Hero */}
+        <div className="flex-1 flex flex-col items-center">
+          <section className="w-full flex flex-col items-center justify-center py-10 relative overflow-hidden min-h-[500px] rounded-3xl glass-panel">
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-25">
+              <div className="radar-ring w-[240px] h-[240px]"></div>
+              <div className="radar-ring w-[380px] h-[380px]"></div>
+              <div className="radar-ring w-[520px] h-[520px]"></div>
+            </div>
+
+            <div className="z-10 flex flex-col items-center px-6">
+              <button
+                onMouseDown={handleStartHold}
+                onMouseUp={handleEndHold}
+                onMouseLeave={handleEndHold}
+                onTouchStart={handleStartHold}
+                onTouchEnd={handleEndHold}
+                disabled={triggering}
+                className={cn(
+                  "w-56 h-56 xl:w-64 xl:h-64 rounded-full sos-glow bg-red-600/90 text-white flex flex-col items-center justify-center relative active:scale-95 transition-transform overflow-hidden cursor-pointer select-none",
+                  triggering && "animate-pulse cursor-not-allowed"
+                )}
+              >
+                <div
+                  className="absolute bottom-0 left-0 w-full bg-white/20 transition-all duration-75"
+                  style={{ height: `${holdProgress}%` }}
+                />
+                <div className="text-6xl font-black italic mb-1 tracking-tighter z-10">
+                  {triggering ? '...' : 'SOS'}
+                </div>
+                <div className="text-[10px] font-bold tracking-[0.2em] opacity-80 uppercase z-10">
+                  {triggering ? 'Triggering...' : 'Hold to Trigger'}
+                </div>
+              </button>
+
+              <div className="mt-12 text-center">
+                <h2 className="text-2xl font-light text-white/80">
+                  Everything is currently <span className="text-accent font-medium">safe</span>.
+                </h2>
+                <p className="text-white/30 text-xs mt-2 uppercase tracking-widest font-bold">
+                  Guardian monitoring active
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* Right column: Cards */}
+        <div className="w-80 xl:w-96 flex flex-col gap-4 shrink-0">
+          {/* Check-in Card */}
+          <div className="glass-panel rounded-2xl p-6 flex flex-col gap-4">
+            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold">Safety Check-in</div>
+            <div className="flex items-center justify-between">
+              <span className="text-3xl font-light">
+                {nextCheckIn ? `${nextCheckIn.durationMinutes}:00` : '00:00'}
+              </span>
+              <span className="text-[10px] px-2 py-1 rounded bg-white/10 text-white/60">
+                {nextCheckIn ? 'MONITORING' : 'IDLE'}
+              </span>
+            </div>
+            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+              <div className="bg-accent h-full transition-all duration-500" style={{ width: nextCheckIn ? '70%' : '0%' }}></div>
+            </div>
+            <a href="/checkin" className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest text-center block">
+              {nextCheckIn ? 'Manage Check-in' : 'Start Check-in'}
+            </a>
+          </div>
+
+          {/* Guardians Summary */}
+          <div className="glass-panel rounded-2xl p-6 flex flex-col">
+            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-4">Guardians</div>
+            <div className="space-y-3">
+              {contacts.slice(0, 3).map((contact, idx) => (
+                <div key={contact.id} className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0",
+                    idx === 0 ? "bg-gradient-to-br from-accent to-blue-600 text-black" : "bg-white/10"
+                  )}>
+                    {contact.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{contact.name}</div>
+                    <div className="text-[8px] text-accent uppercase tracking-tighter flex items-center gap-1">
+                      P{contact.priority}
+                      {contact.email
+                        ? <span className="text-green-400">• Email ✓</span>
+                        : <span className="text-yellow-500">• No email</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {contacts.length === 0 && (
+                <p className="text-[10px] text-white/30 italic">No guardians configured.</p>
+              )}
+            </div>
+            <a href="/contacts" className="mt-4 w-full py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-semibold hover:bg-white/10 transition-colors uppercase tracking-widest text-center block">
+              Manage Guardians
+            </a>
+          </div>
+
+          {/* Map Preview */}
+          <div className="glass-panel rounded-2xl overflow-hidden min-h-[140px] flex">
+            <div className="relative flex-1 bg-zinc-900/60 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2 opacity-30">
+                <span className="material-symbols-outlined text-3xl">my_location</span>
+                <p className="text-[10px] font-bold uppercase tracking-widest">GPS Ready</p>
+              </div>
+              <div className="absolute bottom-3 left-3">
+                <div className="bg-black/60 px-2 py-1 rounded text-[8px] border border-white/10 font-mono text-white/80 uppercase">Standby</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 // ── Alert Active Full-Screen View ──────────────────────────────────────────
 function AlertActiveView({

@@ -59,106 +59,125 @@ export default function Profile() {
         <h2 className="text-3xl font-light text-white tracking-tight">
           My <span className="text-accent font-medium">Profile</span>
         </h2>
-        <p className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-bold">Account & notification setup</p>
+        <p className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-bold">Account &amp; notification setup</p>
       </div>
 
-      {/* User Card */}
-      <div className="glass-panel rounded-2xl p-6 flex items-center gap-5">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-blue-600 flex items-center justify-center text-black font-bold text-2xl shrink-0">
-          {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-white font-semibold text-lg truncate">{user?.displayName || 'Anonymous'}</p>
-          <p className="text-white/40 text-sm truncate">{user?.email}</p>
-          <p className="text-[10px] text-white/20 uppercase tracking-widest mt-1">
-            UID: {user?.uid?.slice(0, 16)}…
-          </p>
-        </div>
-        <button
-          onClick={logout}
-          className="shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-xl border border-white/10 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400 text-white/30 transition-all"
-        >
-          <span className="material-symbols-outlined text-sm">logout</span>
-          <span className="text-[8px] uppercase tracking-widest font-bold">Logout</span>
-        </button>
-      </div>
+      {/* ── Desktop 2-col ── */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-      {/* Email Config Status */}
-      <div className={cn(
-        "p-5 rounded-2xl border flex items-start gap-4",
-        configured
-          ? "border-green-500/20 bg-green-500/5"
-          : "border-yellow-500/20 bg-yellow-500/5"
-      )}>
-        <span className={cn(
-          "material-symbols-outlined text-xl shrink-0 mt-0.5",
-          configured ? "text-green-400" : "text-yellow-400"
-        )}>
-          {configured ? 'check_circle' : 'warning'}
-        </span>
-        <div>
-          <p className={cn("font-bold text-sm", configured ? "text-green-300" : "text-yellow-300")}>
-            {configured ? 'Email Notifications Active' : 'Email Notifications Not Configured'}
-          </p>
-          <p className="text-[11px] text-white/40 mt-1">
-            {configured
-              ? 'Your contacts will receive SOS alert emails automatically.'
-              : 'Follow the steps below to enable automatic email alerts to your guardian contacts.'}
-          </p>
+        {/* Left column: account info */}
+        <div className="w-full lg:w-72 xl:w-80 shrink-0 space-y-4">
+          {/* User Card */}
+          <div className="glass-panel rounded-2xl p-6 flex items-center gap-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-blue-600 flex items-center justify-center text-black font-bold text-2xl shrink-0">
+              {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold text-lg truncate">{user?.displayName || 'Anonymous'}</p>
+              <p className="text-white/40 text-sm truncate">{user?.email}</p>
+              <p className="text-[10px] text-white/20 uppercase tracking-widest mt-1">
+                UID: {user?.uid?.slice(0, 16)}…
+              </p>
+            </div>
+            <button
+              onClick={logout}
+              className="shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-xl border border-white/10 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400 text-white/30 transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">logout</span>
+              <span className="text-[8px] uppercase tracking-widest font-bold">Logout</span>
+            </button>
+          </div>
+
+          {/* Email Config Status */}
+          <div className={cn(
+            "p-5 rounded-2xl border flex items-start gap-4",
+            configured
+              ? "border-green-500/20 bg-green-500/5"
+              : "border-yellow-500/20 bg-yellow-500/5"
+          )}>
+            <span className={cn(
+              "material-symbols-outlined text-xl shrink-0 mt-0.5",
+              configured ? "text-green-400" : "text-yellow-400"
+            )}>
+              {configured ? 'check_circle' : 'warning'}
+            </span>
+            <div>
+              <p className={cn("font-bold text-sm", configured ? "text-green-300" : "text-yellow-300")}>
+                {configured ? 'Email Notifications Active' : 'Email Notifications Not Configured'}
+              </p>
+              <p className="text-[11px] text-white/40 mt-1">
+                {configured
+                  ? 'Your contacts will receive SOS alert emails automatically.'
+                  : 'Follow the steps below to enable automatic email alerts to your guardian contacts.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 rounded-2xl border border-white/5 text-center">
+            <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest">GuardianOS · Spark Plan · Frontend-only escalation</p>
+          </div>
         </div>
-      </div>
 
-      {/* Setup Guide */}
-      {!configured && (
-        <div className="space-y-4">
-          <h3 className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">EmailJS Setup Guide</h3>
+        {/* Right column: setup guide */}
+        <div className="flex-1 space-y-4">
+          {/* Setup Guide */}
+          {!configured && (
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">EmailJS Setup Guide</h3>
 
-          {STEPS.map(({ num, title, desc, link, linkLabel }) => (
-            <div key={num} className="glass-panel rounded-2xl p-5 flex gap-4">
-              <div className="w-7 h-7 rounded bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-accent shrink-0">{num}</div>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-white">{title}</p>
-                <p className="text-[11px] text-white/40 leading-relaxed">{desc}</p>
-                {link && (
-                  <a href={link} target="_blank" rel="noopener noreferrer"
-                    className="text-[11px] text-accent hover:underline inline-flex items-center gap-1 mt-1">
-                    {linkLabel}
-                    <span className="material-symbols-outlined text-xs">open_in_new</span>
-                  </a>
-                )}
+              {STEPS.map(({ num, title, desc, link, linkLabel }) => (
+                <div key={num} className="glass-panel rounded-2xl p-5 flex gap-4">
+                  <div className="w-7 h-7 rounded bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-accent shrink-0">{num}</div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-white">{title}</p>
+                    <p className="text-[11px] text-white/40 leading-relaxed">{desc}</p>
+                    {link && (
+                      <a href={link} target="_blank" rel="noopener noreferrer"
+                        className="text-[11px] text-accent hover:underline inline-flex items-center gap-1 mt-1">
+                        {linkLabel}
+                        <span className="material-symbols-outlined text-xs">open_in_new</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Template */}
+              <div className="glass-panel rounded-2xl p-5 space-y-3">
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">EmailJS Template Content</p>
+                <p className="text-[10px] text-white/30">Paste this into your EmailJS template body:</p>
+                <pre className="bg-black/40 rounded-xl p-4 text-[11px] font-mono text-accent/80 whitespace-pre-wrap overflow-x-auto border border-white/5">
+                  {TEMPLATE_CODE}
+                </pre>
+                <p className="text-[10px] text-white/20">
+                  ⚠ Make sure your template has <code className="text-accent">To Email</code> field set to <code className="text-accent">{'{{to_email}}'}</code>
+                </p>
+              </div>
+
+              {/* .env snippet */}
+              <div className="glass-panel rounded-2xl p-5 space-y-3">
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">.env file (project root)</p>
+                <pre className="bg-black/40 rounded-xl p-4 text-[11px] font-mono text-green-400 whitespace-pre-wrap overflow-x-auto border border-white/5">
+                  {ENV_CODE}
+                </pre>
+                <p className="text-[10px] text-white/20">
+                  After saving .env, restart the dev server with <code className="text-accent">npm run dev</code>
+                </p>
               </div>
             </div>
-          ))}
+          )}
 
-          {/* Template */}
-          <div className="glass-panel rounded-2xl p-5 space-y-3">
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">EmailJS Template Content</p>
-            <p className="text-[10px] text-white/30">Paste this into your EmailJS template body:</p>
-            <pre className="bg-black/40 rounded-xl p-4 text-[11px] font-mono text-accent/80 whitespace-pre-wrap overflow-x-auto border border-white/5">
-              {TEMPLATE_CODE}
-            </pre>
-            <p className="text-[10px] text-white/20">
-              ⚠ Make sure your template has <code className="text-accent">To Email</code> field set to <code className="text-accent">{'{{to_email}}'}</code>
-            </p>
-          </div>
-
-          {/* .env snippet */}
-          <div className="glass-panel rounded-2xl p-5 space-y-3">
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">.env file (project root)</p>
-            <pre className="bg-black/40 rounded-xl p-4 text-[11px] font-mono text-green-400 whitespace-pre-wrap overflow-x-auto border border-white/5">
-              {ENV_CODE}
-            </pre>
-            <p className="text-[10px] text-white/20">
-              After saving .env, restart the dev server with <code className="text-accent">npm run dev</code>
-            </p>
-          </div>
+          {configured && (
+            <div className="glass-panel rounded-2xl p-8 text-center space-y-3">
+              <span className="material-symbols-outlined text-4xl text-green-400">check_circle</span>
+              <p className="text-white font-semibold">All systems go!</p>
+              <p className="text-[11px] text-white/40">Email notifications are configured and ready. Your guardians will be alerted automatically when SOS is triggered.</p>
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Footer */}
-      <div className="p-6 rounded-2xl border border-white/5 text-center">
-        <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest">GuardianOS · Spark Plan · Frontend-only escalation</p>
       </div>
     </div>
   );
 }
+
