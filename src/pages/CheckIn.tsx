@@ -11,7 +11,9 @@ export default function CheckInPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeCheckIn, setActiveCheckIn]     = useState<CheckIn | null>(null);
-  const [selectedDuration, setSelectedDuration] = useState(15);
+  const [durationH, setDurationH] = useState(0);
+  const [durationM, setDurationM] = useState(15);
+  const [durationS, setDurationS] = useState(0);
   const [timeRemaining, setTimeRemaining]     = useState<string | null>(null);
   const [progressPercent, setProgressPercent] = useState<number | null>(null);
   const [triggering, setTriggering]           = useState(false);
@@ -70,12 +72,18 @@ export default function CheckInPage() {
         setProgressPercent(0);
         handleExpiry();
       } else {
-        const mins = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
         const secs = Math.floor((diff % 60000) / 1000);
-        setTimeRemaining(`${mins}:${secs.toString().padStart(2, '0')}`);
+        
+        if (hours > 0) {
+          setTimeRemaining(`${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+        } else {
+          setTimeRemaining(`${mins}:${secs.toString().padStart(2, '0')}`);
+        }
         
         // Calculate percentage remaining for dynamic color
-        const totalDurationMs = activeCheckIn.durationMinutes * 60000;
+        const totalDurationMs = activeCheckIn.durationSeconds * 1000;
         const pct = Math.max(0, Math.min(100, (diff / totalDurationMs) * 100));
         setProgressPercent(pct);
       }
@@ -108,12 +116,16 @@ export default function CheckInPage() {
 
   const startCheckIn = async () => {
     if (!user) return;
+    const totalSeconds = (durationH * 3600) + (durationM * 60) + durationS;
+    if (totalSeconds <= 0) return;
+
     const deadline = new Date();
-    deadline.setMinutes(deadline.getMinutes() + selectedDuration);
+    deadline.setSeconds(deadline.getSeconds() + totalSeconds);
+    
     await dbService.createDocument(`users/${user.uid}/checkins`, {
       userId: user.uid,
       deadline: Timestamp.fromDate(deadline),
-      durationMinutes: selectedDuration,
+      durationSeconds: totalSeconds,
       status: 'pending',
     });
   };
@@ -217,7 +229,7 @@ export default function CheckInPage() {
                   </button>
                 </div>
               ) : (
-                <div className="h-16 w-full flex items-center justify-center text-white/20 italic text-[10px] uppercase tracking-widest mt-4">
+                <div className="h-16 w-full flex items-center justify-center text-on-surface-variant/20 italic text-[10px] uppercase tracking-widest mt-4">
                   Initialize protocol below
                 </div>
               )}
@@ -233,49 +245,108 @@ export default function CheckInPage() {
               <h3 className="text-xs font-bold text-on-surface-variant/30 uppercase tracking-[0.3em] ml-1">
                 Protocol Configuration
               </h3>
-
               <div className="grid grid-cols-2 gap-3">
-                {[15, 30, 60, 120].map((duration) => (
-                  <button
-                    key={duration}
-                    onClick={() => setSelectedDuration(duration)}
-                    className={cn(
-                      "h-20 flex flex-col items-center justify-center border rounded-2xl transition-all active:scale-95 relative overflow-hidden",
-                      selectedDuration === duration
-                        ? "border-accent/50 bg-accent/5 text-accent shadow-[0_0_15px_rgba(34,211,238,0.1)]"
-                        : "border-outline bg-on-background/[0.02] text-on-surface-variant/40 hover:bg-on-background/[0.05]"
-                    )}
-                  >
-                    <span className="text-xs font-bold tracking-widest uppercase mb-1">Window</span>
-                    <span className="text-xl font-light">{duration >= 60 ? `${duration / 60}h` : `${duration}m`}</span>
-                    {selectedDuration === duration && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"></div>
-                    )}
-                  </button>
-                ))}
+                {[15, 30, 60, 120].map((duration) => {
+                  const h = Math.floor(duration / 60);
+                  const m = duration % 60;
+                  const isSelected = durationH === h && durationM === m && durationS === 0;
+                  return (
+                    <button
+                      key={duration}
+                      onClick={() => { setDurationH(h); setDurationM(m); setDurationS(0); }}
+                      className={cn(
+                        "h-20 flex flex-col items-center justify-center border rounded-2xl transition-all active:scale-95 relative overflow-hidden",
+                        isSelected
+                          ? "border-accent/50 bg-accent/5 text-accent shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+                          : "border-outline bg-on-background/[0.02] text-on-surface-variant/40 hover:bg-on-background/[0.05]"
+                      )}
+                    >
+                      <span className="text-xs font-bold tracking-widest uppercase mb-1">Window</span>
+                      <span className="text-xl font-light">{duration >= 60 ? `${duration / 60}h` : `${duration}m`}</span>
+                      {isSelected && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"></div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Custom Time Input */}
-              <div className="flex items-center gap-3 bg-on-background/[0.02] border border-outline rounded-2xl px-5 h-14 focus-within:border-accent/50 focus-within:bg-accent/5 focus-within:shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-all">
-                <span className="material-symbols-outlined text-on-surface-variant/30 text-lg">timer</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="1440"
-                  placeholder="Custom time"
-                  className="bg-transparent border-none outline-none text-on-surface text-lg font-light w-full placeholder:text-on-surface-variant/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  value={selectedDuration || ''}
-                  onChange={(e) => setSelectedDuration(parseInt(e.target.value) || 0)}
-                />
-                <span className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest shrink-0">Minutes</span>
+              {/* H:M:S Picker */}
+              <div className="glass-panel rounded-2xl p-4 space-y-3 border border-outline">
+                <p className="text-[10px] font-bold text-on-surface-variant/30 uppercase tracking-[0.2em] ml-1">Custom Interval</p>
+                <div className="flex items-center justify-between gap-3">
+                  {/* Hours */}
+                  <div className="flex-1 flex flex-col items-center gap-1">
+                    <button 
+                      onClick={() => setDurationH(h => Math.min(23, h + 1))}
+                      className="w-full h-8 flex items-center justify-center bg-on-background/5 rounded-t-xl hover:bg-on-background/10 transition-all text-on-surface/40 hover:text-accent"
+                    >
+                      <span className="material-symbols-outlined text-sm">keyboard_arrow_up</span>
+                    </button>
+                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline">
+                      <span className="text-xl font-light font-mono">{durationH.toString().padStart(2, '0')}</span>
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20">Hours</span>
+                    </div>
+                    <button 
+                      onClick={() => setDurationH(h => Math.max(0, h - 1))}
+                      className="w-full h-8 flex items-center justify-center bg-on-background/5 rounded-b-xl hover:bg-on-background/10 transition-all text-on-surface/40 hover:text-accent"
+                    >
+                      <span className="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                    </button>
+                  </div>
+
+                  <span className="text-on-surface/20 font-light text-xl mt-2">:</span>
+
+                  {/* Minutes */}
+                  <div className="flex-1 flex flex-col items-center gap-1">
+                    <button 
+                      onClick={() => setDurationM(m => m === 59 ? 0 : m + 1)}
+                      className="w-full h-8 flex items-center justify-center bg-on-background/5 rounded-t-xl hover:bg-on-background/10 transition-all text-on-surface/40 hover:text-accent"
+                    >
+                      <span className="material-symbols-outlined text-sm">keyboard_arrow_up</span>
+                    </button>
+                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline">
+                      <span className="text-xl font-light font-mono">{durationM.toString().padStart(2, '0')}</span>
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20">Mins</span>
+                    </div>
+                    <button 
+                      onClick={() => setDurationM(m => m === 0 ? 59 : m - 1)}
+                      className="w-full h-8 flex items-center justify-center bg-on-background/5 rounded-b-xl hover:bg-on-background/10 transition-all text-on-surface/40 hover:text-accent"
+                    >
+                      <span className="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                    </button>
+                  </div>
+
+                  <span className="text-on-surface/20 font-light text-xl mt-2">:</span>
+
+                  {/* Seconds */}
+                  <div className="flex-1 flex flex-col items-center gap-1">
+                    <button 
+                      onClick={() => setDurationS(s => s === 59 ? 0 : s + 1)}
+                      className="w-full h-8 flex items-center justify-center bg-on-background/5 rounded-t-xl hover:bg-on-background/10 transition-all text-on-surface/40 hover:text-accent"
+                    >
+                      <span className="material-symbols-outlined text-sm">keyboard_arrow_up</span>
+                    </button>
+                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline">
+                      <span className="text-xl font-light font-mono">{durationS.toString().padStart(2, '0')}</span>
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20">Secs</span>
+                    </div>
+                    <button 
+                      onClick={() => setDurationS(s => s === 0 ? 59 : s - 1)}
+                      className="w-full h-8 flex items-center justify-center bg-on-background/5 rounded-b-xl hover:bg-on-background/10 transition-all text-on-surface/40 hover:text-accent"
+                    >
+                      <span className="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <button
                 onClick={startCheckIn}
-                disabled={selectedDuration <= 0}
+                disabled={(durationH === 0 && durationM === 0 && durationS === 0)}
                 className={cn(
                   "w-full py-5 rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl transition-all uppercase tracking-[0.2em]",
-                  selectedDuration > 0 
+                  (durationH > 0 || durationM > 0 || durationS > 0)
                     ? "bg-accent text-black active:scale-95 shadow-accent/20 cursor-pointer" 
                     : "bg-on-background/5 text-on-surface-variant/20 cursor-not-allowed border border-outline"
                 )}
@@ -306,7 +377,7 @@ export default function CheckInPage() {
             <h4 className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-[0.3em]">How It Works</h4>
             <div className="space-y-4">
               {[
-                { step: '01', text: 'Set a safety window (15 min – 2 hours).' },
+                { step: '01', text: 'Set a safety window (Hours : Mins : Secs).' },
                 { step: '02', text: 'Confirm "I\'m Safe" before the timer ends.' },
                 { step: '03', color: 'text-red-500', text: 'If the timer expires — SOS is automatically triggered and your contacts are alerted.' },
               ].map(({ step, text, color }) => (

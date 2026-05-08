@@ -50,7 +50,7 @@ export interface CheckIn {
   id: string;
   userId: string;
   deadline: any;
-  durationMinutes: number;
+  durationSeconds: number;
   status: 'pending' | 'confirmed' | 'expired' | 'alerted';
   createdAt: any;
 }

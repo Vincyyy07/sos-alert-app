@@ -28,8 +28,8 @@ service cloud.firestore {
           return data.keys().hasAll(['userId', 'name', 'phone', 'priority'])
             && data.userId == request.auth.uid
             && data.name is string && data.name.size() <= 100
-            && data.phone is string && data.phone.size() <= 20
-            && data.priority is int && data.priority >= 1 && data.priority <= 3;
+            && data.phone is string && data.phone.size() <= 30
+            && data.priority is int && data.priority >= 1 && data.priority <= 5;
         }
 
         allow read: if isOwner(userId);

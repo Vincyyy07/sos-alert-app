@@ -124,7 +124,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               to={item.path}
               className={cn(
                 "flex flex-col items-center justify-center px-4 py-1 transition-all duration-150 rounded-xl relative",
-                isActive ? "text-accent scale-95" : "text-white/40 hover:text-white"
+                isActive ? "text-accent scale-95" : "text-on-surface-variant/40 hover:text-on-surface"
               )}
             >
               <span className={cn("material-symbols-outlined h-5 w-5 flex items-center justify-center text-xl", isActive && "font-fill")}>

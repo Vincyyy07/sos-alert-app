@@ -247,7 +247,7 @@ export default function Profile() {
               <div className="glass-panel rounded-2xl p-5 space-y-3">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">EmailJS Template Content</p>
                 <p className="text-[10px] text-on-surface-variant/70">Paste this into your EmailJS template body:</p>
-                <pre className="bg-black/40 rounded-xl p-4 text-[11px] font-mono text-accent/80 whitespace-pre-wrap overflow-x-auto border border-outline-variant">
+                <pre className="bg-on-surface/5 rounded-xl p-4 text-[11px] font-mono text-accent/80 whitespace-pre-wrap overflow-x-auto border border-outline-variant">
                   {TEMPLATE_CODE}
                 </pre>
                 <p className="text-[10px] text-on-surface-variant/50">
@@ -258,7 +258,7 @@ export default function Profile() {
               {/* .env snippet */}
               <div className="glass-panel rounded-2xl p-5 space-y-3">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">.env file (project root)</p>
-                <pre className="bg-black/40 rounded-xl p-4 text-[11px] font-mono text-green-400 whitespace-pre-wrap overflow-x-auto border border-outline-variant">
+                <pre className="bg-on-surface/5 rounded-xl p-4 text-[11px] font-mono text-green-400 whitespace-pre-wrap overflow-x-auto border border-outline-variant">
                   {ENV_CODE}
                 </pre>
                 <p className="text-[10px] text-on-surface-variant/50">

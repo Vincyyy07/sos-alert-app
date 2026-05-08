@@ -90,7 +90,7 @@ export default function Login() {
       <div className="flex flex-1 min-h-screen pt-10">
 
         {/* ── Left decorative panel (desktop only) ── */}
-        <div className="hidden lg:flex flex-col items-center justify-center flex-1 relative overflow-hidden border-r border-white/5 bg-gradient-to-br from-red-950/40 to-black">
+        <div className="hidden lg:flex flex-col items-center justify-center flex-1 relative overflow-hidden border-r border-outline/50 bg-gradient-to-br from-red-950/40 to-black">
           {/* Radar rings decoration */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
             <div className="radar-ring w-[200px] h-[200px]"></div>
@@ -106,7 +106,7 @@ export default function Login() {
               <h1 className="text-4xl font-extrabold text-white tracking-widest uppercase mb-3">
                 GUARDIAN<span className="text-red-500">OS</span>
               </h1>
-              <p className="text-sm font-light text-white/40 uppercase tracking-[0.2em] max-w-xs mx-auto leading-relaxed">
+              <p className="text-sm font-light text-on-surface/40 uppercase tracking-[0.2em] max-w-xs mx-auto leading-relaxed">
                 High-stakes personal security protocol
               </p>
             </div>
@@ -117,7 +117,7 @@ export default function Login() {
                 { icon: 'location_on', label: 'Live GPS tracking' },
                 { icon: 'timer', label: 'Automated safety check-in' },
               ].map(({ icon, label }) => (
-                <div key={icon} className="flex items-center gap-3 text-white/40">
+                <div key={icon} className="flex items-center gap-3 text-on-surface/40">
                   <span className="material-symbols-outlined text-accent text-sm">{ icon }</span>
                   <span className="text-[11px] font-medium uppercase tracking-wider">{label}</span>
                 </div>

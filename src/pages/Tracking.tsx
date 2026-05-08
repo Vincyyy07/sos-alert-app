@@ -82,14 +82,14 @@ export default function Tracking() {
       <div className="h-screen w-full bg-background flex flex-col relative overflow-hidden font-sans">
 
         {/* Header */}
-        <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-black/60 backdrop-blur-xl z-50 shrink-0">
+        <header className="h-16 border-b border-outline/50 flex items-center justify-between px-6 bg-surface/60 backdrop-blur-xl z-50 shrink-0">
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-red-500 font-fill animate-pulse">warning</span>
             <div>
-              <h1 className="text-sm font-bold text-white tracking-widest uppercase">
+              <h1 className="text-sm font-bold text-on-surface tracking-widest uppercase">
                 SOS Alert Active
               </h1>
-              <span className="text-[9px] text-white/40 uppercase tracking-[0.2em]">
+              <span className="text-[9px] text-on-surface-variant uppercase tracking-[0.2em]">
                 {alert?.userName || 'User'} · ID: {alertId.slice(0, 8).toUpperCase()}
               </span>
             </div>
@@ -166,9 +166,9 @@ export default function Tracking() {
           {/* Telemetry Overlay */}
           {hasLocation && (
             <div className="absolute top-4 left-4 z-10 space-y-2 pointer-events-none">
-              <div className="bg-black/70 backdrop-blur-md border border-white/10 rounded-2xl p-4 min-w-[180px]">
+              <div className="bg-on-background/70 backdrop-blur-md border border-white/10 rounded-2xl p-4 min-w-[180px]">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest">Target Telemetry</p>
+                  <p className="text-[8px] font-bold text-on-surface/30 uppercase tracking-widest">Target Telemetry</p>
                   <div className={cn(
                     "px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter",
                     isLive && !isStale ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
@@ -179,14 +179,14 @@ export default function Tracking() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-accent text-xs">my_location</span>
-                    <span className="text-[10px] font-mono text-white/60">
+                    <span className="text-[10px] font-mono text-on-surface/60">
                       {lat.toFixed(5)}, {lng.toFixed(5)}
                     </span>
                   </div>
                   {accuracy > 0 && (
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-accent text-xs">radar</span>
-                      <span className="text-[10px] font-mono text-white/60">
+                      <span className="text-[10px] font-mono text-on-surface/60">
                         ±{Math.round(accuracy)}m accuracy
                       </span>
                     </div>
@@ -198,23 +198,24 @@ export default function Tracking() {
         </main>
 
         {/* Bottom Control Bar */}
-        <div className="bg-black/80 backdrop-blur-xl border-t border-white/5 p-4 shrink-0 z-20">
+        <div className="bg-surface/80 backdrop-blur-xl border-t border-outline/50 p-4 shrink-0 z-20">
           <div className="grid grid-cols-2 gap-3 w-full max-w-sm mx-auto">
-            <a
+            <a 
               href={hasLocation ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : '#'}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setAcknowledged(true)}
-              className={`border flex items-center justify-center gap-2 h-14 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${
-                acknowledged ? 'border-green-500/40 text-green-400 bg-green-500/10' : 'border-white/10 text-white hover:bg-white/5'
-              }`}
+              className={cn(
+                "flex-1 border flex items-center justify-center gap-2 h-14 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all active:scale-95",
+                acknowledged ? 'border-green-500/40 text-green-500 bg-green-500/10' : 'border-outline text-on-surface hover:bg-on-background/5'
+              )}
             >
               <span className="material-symbols-outlined text-sm md:text-base text-accent">directions</span>
               {acknowledged ? 'Routing...' : 'En Route'}
             </a>
-            <a
+            <a 
               href={alert?.userPhone ? `tel:${alert.userPhone}` : '#'}
-              className="border border-white/10 text-white flex items-center justify-center gap-2 h-14 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-all active:scale-95"
+              className="border border-outline text-on-surface flex items-center justify-center gap-2 h-14 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-wider hover:bg-on-background/5 transition-all active:scale-95 px-6"
             >
               <span className="material-symbols-outlined text-sm md:text-base text-accent">call</span>
               Call User
@@ -223,8 +224,8 @@ export default function Tracking() {
         </div>
 
         {/* Footer */}
-        <footer className="h-8 border-t border-white/5 flex items-center justify-center bg-black shrink-0">
-          <p className="text-[8px] font-mono text-white/20 uppercase tracking-[0.4em]">
+        <footer className="h-8 border-t border-outline/50 flex items-center justify-center bg-black shrink-0">
+          <p className="text-[8px] font-mono text-on-surface/20 uppercase tracking-[0.4em]">
             Live · Updates every 5s · Powered by GuardianOS
           </p>
         </footer>
