@@ -153,8 +153,16 @@ export default function Contacts() {
       });
       setIsAdding(false);
       setNewContact(BLANK_CONTACT);
-    } catch (err) {
-      setAddError('Failed to add contact. Please try again.');
+    } catch (err: any) {
+      console.error('[Contacts] Add failed:', err);
+      let msg = 'Failed to add contact.';
+      try {
+        const parsed = JSON.parse(err.message);
+        msg = parsed.error || msg;
+      } catch {
+        msg = err.message || msg;
+      }
+      setAddError(msg);
     }
   };
 
@@ -197,8 +205,16 @@ export default function Contacts() {
         receiveEscalations: editForm.receiveEscalations,
       });
       setEditingContact(null);
-    } catch (err) {
-      setEditError('Failed to save changes. Please try again.');
+    } catch (err: any) {
+      console.error('[Contacts] Edit failed:', err);
+      let msg = 'Failed to save changes.';
+      try {
+        const parsed = JSON.parse(err.message);
+        msg = parsed.error || msg;
+      } catch {
+        msg = err.message || msg;
+      }
+      setEditError(msg);
     }
   };
 
@@ -451,17 +467,25 @@ export default function Contacts() {
         )}
       </div>
 
-      {/* Add Contact Form */}
-      {isAdding ? (
-        <div className="glass-panel p-6 rounded-2xl shadow-2xl">
-          <h3 className="text-xs font-bold text-white uppercase tracking-[0.3em] mb-5">Add New Guardian</h3>
-          {addError && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold px-4 py-3 rounded-xl flex items-center gap-2 mb-5">
-              <span className="material-symbols-outlined text-sm">error</span>{addError}
+      {/* Add Contact Modal */}
+      {isAdding && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-24 md:pb-4" onClick={e => { if (e.target === e.currentTarget) setIsAdding(false); }}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsAdding(false)} />
+          <div className="relative w-full max-w-md glass-panel rounded-2xl p-6 shadow-2xl border border-white/10 max-h-[85vh] overflow-y-auto hide-scrollbar">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xs font-bold text-white uppercase tracking-[0.3em]">Add New Guardian</h3>
+              <button onClick={() => setIsAdding(false)} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40">
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
             </div>
-          )}
-          <form className="space-y-4" onSubmit={handleAdd}>
-            <div className="grid grid-cols-2 gap-4">
+
+            {addError && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold px-4 py-3 rounded-xl flex items-center gap-2 mb-5">
+                <span className="material-symbols-outlined text-sm">error</span>{addError}
+              </div>
+            )}
+
+            <form className="space-y-4" onSubmit={handleAdd}>
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold uppercase text-white/30 tracking-widest ml-1">Name</label>
                 <input required placeholder="Full name" className="w-full h-12 px-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-accent/40 outline-none transition-all" value={newContact.name} onChange={e => setNewContact({ ...newContact, name: e.target.value })} />
@@ -470,38 +494,41 @@ export default function Contacts() {
                 <label className="text-[9px] font-bold uppercase text-white/30 tracking-widest ml-1">Phone</label>
                 <input required type="tel" placeholder="+91 XXXXXXXXXX" className="w-full h-12 px-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-accent/40 outline-none transition-all" value={newContact.phone} onChange={e => phoneChangeHandler(e.target.value, v => setNewContact({ ...newContact, phone: v }))} />
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold uppercase text-white/30 tracking-widest ml-1">Email <span className="text-accent">(required for SOS alerts)</span></label>
-              <input type="email" placeholder="guardian@example.com" className="w-full h-12 px-4 bg-white/5 border border-accent/20 rounded-xl text-sm focus:border-accent/50 outline-none transition-all" value={newContact.email} onChange={e => setNewContact({ ...newContact, email: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase text-white/30 tracking-widest ml-1">Relationship</label>
-                <input required placeholder="e.g. Parent" className="w-full h-12 px-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-accent/40 outline-none transition-all" value={newContact.relationship} onChange={e => setNewContact({ ...newContact, relationship: e.target.value })} />
+                <label className="text-[9px] font-bold uppercase text-white/30 tracking-widest ml-1">Email <span className="text-accent">(required for SOS alerts)</span></label>
+                <input type="email" placeholder="guardian@example.com" className="w-full h-12 px-4 bg-white/5 border border-accent/20 rounded-xl text-sm focus:border-accent/50 outline-none transition-all" value={newContact.email} onChange={e => setNewContact({ ...newContact, email: e.target.value })} />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase text-white/30 tracking-widest ml-1">Priority Group</label>
-                <select 
-                  className="w-full h-12 px-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-accent/40 outline-none transition-all appearance-none" 
-                  value={newContact.priority} 
-                  onChange={e => setNewContact({ ...newContact, priority: parseInt(e.target.value) })}
-                >
-                  {[1, 2, 3, 4, 5].map(p => (
-                    <option key={p} value={p} className="bg-black text-white">
-                      {TIMING_MAP[p] ? `P${p} • ${TIMING_MAP[p]}` : `Priority ${p}`}
-                    </option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold uppercase text-white/30 tracking-widest ml-1">Relationship</label>
+                  <input required placeholder="e.g. Parent" className="w-full h-12 px-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-accent/40 outline-none transition-all" value={newContact.relationship} onChange={e => setNewContact({ ...newContact, relationship: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold uppercase text-white/30 tracking-widest ml-1">Priority</label>
+                  <select 
+                    className="w-full h-12 px-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-accent/40 outline-none transition-all appearance-none" 
+                    value={newContact.priority} 
+                    onChange={e => setNewContact({ ...newContact, priority: parseInt(e.target.value) })}
+                  >
+                    {[1, 2, 3, 4, 5].map(p => (
+                      <option key={p} value={p} className="bg-black text-white">
+                        P{p} • {TIMING_MAP[p] || `+${p} mins`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button type="button" onClick={() => { setIsAdding(false); setAddError(''); }} className="flex-1 h-12 rounded-xl bg-white/5 text-xs font-bold border border-white/5 uppercase tracking-widest">Cancel</button>
-              <button type="submit" className="flex-1 h-12 bg-accent text-black rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-accent/20">Add Guardian</button>
-            </div>
-          </form>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => { setIsAdding(false); setAddError(''); }} className="flex-1 h-12 rounded-xl bg-white/5 text-xs font-bold border border-white/5 uppercase tracking-widest">Cancel</button>
+                <button type="submit" className="flex-1 h-12 bg-accent text-black rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-accent/20">Add Guardian</button>
+              </div>
+            </form>
+          </div>
         </div>
-      ) : (
+      )}
+
+      {/* Floating Add Button (Mobile) */}
+      {!isAdding && (
         <button onClick={() => setIsAdding(true)} className="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-90 transition-transform sos-glow">
           <span className="material-symbols-outlined text-2xl">add</span>
         </button>

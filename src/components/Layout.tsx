@@ -23,7 +23,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <aside className="hidden md:flex flex-col w-64 shrink-0 fixed top-0 left-0 h-screen z-50 border-r border-outline-variant bg-surface/60 backdrop-blur-xl">
         {/* Brand */}
         <div className="flex items-center gap-3 px-6 h-16 border-b border-outline-variant">
-          <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-bold text-white shadow-lg text-sm">S</div>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-800 flex items-center justify-center shadow-lg shadow-red-500/20 transition-transform hover:scale-105">
+            <span className="material-symbols-outlined text-white text-lg font-fill">security</span>
+          </div>
           <h1 className="text-lg font-semibold tracking-tight text-on-background">
             GUARDIAN<span className="text-red-500">OS</span>
           </h1>
@@ -90,7 +92,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Mobile Top Header ───────────────────────────────────── */}
       <header className="md:hidden fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 h-14 bg-surface/60 backdrop-blur-md border-b border-outline-variant">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center font-bold text-white text-xs shadow-lg">S</div>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-red-800 flex items-center justify-center shadow-lg shadow-red-500/20">
+            <span className="material-symbols-outlined text-white text-base font-fill">security</span>
+          </div>
           <h1 className="text-lg font-semibold tracking-tight text-on-background">
             GUARDIAN<span className="text-red-500">OS</span>
           </h1>

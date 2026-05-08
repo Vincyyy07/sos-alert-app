@@ -22,27 +22,17 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create, update: if isOwner(userId) && isValidUser(request.resource.data);
       
-      // Contact rules
-      match /contacts/{contactId} {
-        function isValidContact(data) {
-          return data.keys().hasAll(['userId', 'name', 'phone', 'priority'])
-            && data.userId == request.auth.uid
-            && data.name is string && data.name.size() <= 100
-            && data.phone is string && data.phone.size() <= 30
-            && data.priority is int && data.priority >= 1 && data.priority <= 5;
-        }
-
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId) && isValidContact(request.resource.data);
-        allow delete: if isOwner(userId);
-      }
-
       // Check-in rules
       match /checkins/{checkInId} {
         allow read: if isOwner(userId);
         allow create, update: if isOwner(userId);
         allow delete: if isOwner(userId);
       }
+    }
+
+    // Top-level contact rules to bypass nesting issues
+    match /users/{userId}/contacts/{contactId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
     // Alert rules

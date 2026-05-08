@@ -142,12 +142,12 @@ export default function CheckInPage() {
 
   // Dynamic colors based on time remaining
   const getGlowClasses = () => {
-    if (!activeCheckIn) return "opacity-60";
-    if (progressPercent === null) return "border-accent/30 shadow-[0_0_30px_rgba(34,211,238,0.1)]"; // Fallback cyan
+    if (!activeCheckIn) return "opacity-60 border-outline";
+    if (progressPercent === null) return "border-accent/40 shadow-[0_0_80px_rgba(34,211,238,0.25)] ring-1 ring-accent/20"; 
     
-    if (progressPercent > 50) return "border-green-500/40 shadow-[0_0_30px_rgba(34,197,94,0.15)]";
-    if (progressPercent > 15) return "border-yellow-500/40 shadow-[0_0_30px_rgba(234,179,8,0.15)]";
-    return "border-red-500/60 shadow-[0_0_30px_rgba(239,68,68,0.25)] animate-pulse";
+    if (progressPercent > 50) return "border-green-500/50 shadow-[0_0_80px_rgba(34,197,94,0.3),0_0_30px_rgba(34,197,94,0.1)] ring-1 ring-green-500/20";
+    if (progressPercent > 15) return "border-yellow-500/50 shadow-[0_0_80px_rgba(234,179,8,0.3),0_0_30px_rgba(234,179,8,0.1)] ring-1 ring-yellow-500/20";
+    return "border-red-500/70 shadow-[0_0_100px_rgba(239,68,68,0.4),0_0_40px_rgba(239,68,68,0.2)] ring-1 ring-red-500/30 animate-pulse";
   };
 
   const getIndicatorColor = () => {
@@ -189,13 +189,23 @@ export default function CheckInPage() {
             {activeCheckIn && (
               <div className="absolute top-0 right-0 p-4 md:p-6">
                 <div className={cn(
-                  "flex items-center gap-2 px-3 py-1 rounded-full border bg-opacity-10 transition-colors duration-1000",
-                  progressPercent !== null && progressPercent <= 15 ? "border-red-500/30 bg-red-500" :
-                  progressPercent !== null && progressPercent <= 50 ? "border-yellow-500/30 bg-yellow-500" :
-                  "border-green-500/30 bg-green-500"
+                  "flex items-center gap-2 px-3 py-1 rounded-full border transition-all duration-1000 backdrop-blur-md",
+                  progressPercent !== null && progressPercent <= 15 ? "border-red-500/20 bg-red-500/10" :
+                  progressPercent !== null && progressPercent <= 50 ? "border-yellow-500/20 bg-yellow-500/10" :
+                  "border-green-500/20 bg-green-500/10"
                 )}>
-                  <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", getIndicatorColor().split(' ')[1])}></div>
-                  <span className={cn("text-[9px] font-bold uppercase tracking-widest", getIndicatorColor().split(' ')[0])}>Monitoring</span>
+                  <div className={cn(
+                    "w-1.5 h-1.5 rounded-full animate-pulse", 
+                    progressPercent !== null && progressPercent <= 15 ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" :
+                    progressPercent !== null && progressPercent <= 50 ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]" :
+                    "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
+                  )}></div>
+                  <span className={cn(
+                    "text-[9px] font-bold uppercase tracking-widest", 
+                    progressPercent !== null && progressPercent <= 15 ? "text-red-400" :
+                    progressPercent !== null && progressPercent <= 50 ? "text-yellow-400" :
+                    "text-green-400"
+                  )}>Monitoring</span>
                 </div>
               </div>
             )}
@@ -283,9 +293,20 @@ export default function CheckInPage() {
                     >
                       <span className="material-symbols-outlined text-sm">keyboard_arrow_up</span>
                     </button>
-                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline">
-                      <span className="text-xl font-light font-mono">{durationH.toString().padStart(2, '0')}</span>
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20">Hours</span>
+                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline focus-within:bg-accent/5 transition-colors">
+                      <input 
+                        type="number"
+                        min="0"
+                        max="23"
+                        value={durationH === 0 ? '' : durationH}
+                        placeholder="00"
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          setDurationH(Math.max(0, Math.min(23, val)));
+                        }}
+                        className="w-full bg-transparent text-center text-xl font-light font-mono text-on-background outline-none placeholder:opacity-20"
+                      />
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20 -mt-1">Hours</span>
                     </div>
                     <button 
                       onClick={() => setDurationH(h => Math.max(0, h - 1))}
@@ -305,9 +326,20 @@ export default function CheckInPage() {
                     >
                       <span className="material-symbols-outlined text-sm">keyboard_arrow_up</span>
                     </button>
-                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline">
-                      <span className="text-xl font-light font-mono">{durationM.toString().padStart(2, '0')}</span>
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20">Mins</span>
+                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline focus-within:bg-accent/5 transition-colors">
+                      <input 
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={durationM === 0 ? '' : durationM}
+                        placeholder="00"
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          setDurationM(Math.max(0, Math.min(59, val)));
+                        }}
+                        className="w-full bg-transparent text-center text-xl font-light font-mono text-on-background outline-none placeholder:opacity-20"
+                      />
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20 -mt-1">Mins</span>
                     </div>
                     <button 
                       onClick={() => setDurationM(m => m === 0 ? 59 : m - 1)}
@@ -327,9 +359,20 @@ export default function CheckInPage() {
                     >
                       <span className="material-symbols-outlined text-sm">keyboard_arrow_up</span>
                     </button>
-                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline">
-                      <span className="text-xl font-light font-mono">{durationS.toString().padStart(2, '0')}</span>
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20">Secs</span>
+                    <div className="w-full h-14 bg-on-background/5 flex flex-col items-center justify-center border-x border-outline focus-within:bg-accent/5 transition-colors">
+                      <input 
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={durationS === 0 ? '' : durationS}
+                        placeholder="00"
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          setDurationS(Math.max(0, Math.min(59, val)));
+                        }}
+                        className="w-full bg-transparent text-center text-xl font-light font-mono text-on-background outline-none placeholder:opacity-20"
+                      />
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-on-surface/20 -mt-1">Secs</span>
                     </div>
                     <button 
                       onClick={() => setDurationS(s => s === 0 ? 59 : s - 1)}

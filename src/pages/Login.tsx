@@ -15,9 +15,12 @@ function getFirebaseErrorMessage(code: string): string {
     case 'auth/too-many-requests': return 'Too many attempts. Please try again later.';
     case 'auth/popup-closed-by-user': return 'Google sign-in was cancelled.';
     case 'auth/popup-blocked': return 'Pop-up was blocked by your browser. Please allow pop-ups.';
-    case 'auth/operation-not-allowed': return 'Email/Password sign-in is not enabled. Please enable it in Firebase Console → Authentication → Sign-in methods.';
+    case 'auth/operation-not-allowed': return 'Sign-in method not enabled. Please enable Google/Email in Firebase Console → Authentication → Sign-in methods.';
     case 'auth/network-request-failed': return 'Network error. Check your internet connection.';
-    default: return code ? `Error: ${code}` : 'Something went wrong. Please try again.';
+    case 'auth/unauthorized-domain': return 'Unauthorized Domain: Please add your current URL to "Authorized Domains" in Firebase Console → Authentication → Settings.';
+    case 'permission-denied': return 'Database Permission Denied: Your account was created, but we couldn\'t set up your profile. Please check Firestore rules.';
+    case 'unavailable': return 'Service unavailable. Please check your internet connection and try again.';
+    default: return code ? `System Error (${code}). Please check your Firebase console.` : 'Something went wrong. Please try again.';
   }
 }
 
