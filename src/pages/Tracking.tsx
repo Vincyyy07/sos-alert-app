@@ -4,6 +4,7 @@ import { dbService } from '../services/db';
 import { Alert, LiveLocation } from '../types';
 import { orderBy, limit } from 'firebase/firestore';
 import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
+import { cn } from '../lib/utils';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || (typeof process !== 'undefined' ? (process.env as any).GOOGLE_MAPS_PLATFORM_KEY : '') || '';
 
@@ -60,7 +61,21 @@ export default function Tracking() {
 
   const lat = lastLocation?.lat ?? alert?.lastLocation?.lat ?? 0;
   const lng = lastLocation?.lng ?? alert?.lastLocation?.lng ?? 0;
+  const accuracy = lastLocation?.accuracy ?? alert?.lastLocation?.accuracy ?? 0;
   const hasLocation = lat !== 0 || lng !== 0;
+  const isLive = !!lastLocation;
+  const [isStale, setIsStale] = useState(false);
+
+  // Check if location is stale (> 60s)
+  useEffect(() => {
+    if (!lastLocation?.timestamp) return;
+    const interval = setInterval(() => {
+      const ts = lastLocation.timestamp.toDate?.() ?? new Date(lastLocation.timestamp);
+      const diff = Date.now() - ts.getTime();
+      setIsStale(diff > 60000);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [lastLocation]);
 
   return (
     <APIProvider apiKey={API_KEY} version="weekly">
@@ -101,49 +116,81 @@ export default function Tracking() {
             >
               <AdvancedMarker position={{ lat, lng }}>
                 <div className="relative">
-                  <div className="absolute -inset-4 bg-accent/20 rounded-full animate-ping"></div>
-                  <div className="w-6 h-6 bg-accent rounded-full border-2 border-white shadow-lg flex items-center justify-center">
+                  {/* Accuracy circle */}
+                  {accuracy > 0 && (
+                    <div 
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-accent/10 border border-accent/20 rounded-full pointer-events-none"
+                      style={{ 
+                        width: `${Math.max(40, accuracy * 2)}px`, 
+                        height: `${Math.max(40, accuracy * 2)}px` 
+                      }}
+                    />
+                  )}
+                  <div className={cn("absolute -inset-4 bg-accent/20 rounded-full", isLive && "animate-ping")}></div>
+                  <div className="w-6 h-6 bg-accent rounded-full border-2 border-white shadow-lg flex items-center justify-center relative z-10">
                     <div className="w-2 h-2 bg-white rounded-full"></div>
                   </div>
                 </div>
               </AdvancedMarker>
             </Map>
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-on-background/[0.02] text-on-surface-variant/20 p-10 text-center gap-4">
-              <span className="material-symbols-outlined text-4xl">
-                {hasLocation ? 'map_off' : 'location_searching'}
-              </span>
-              <div className="space-y-1">
-                <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-                  {hasLocation ? 'Maps API key not set' : 'Waiting for location…'}
+            <div className="w-full h-full flex flex-col items-center justify-center bg-on-background/[0.02] p-10 text-center gap-6">
+              <div className="relative">
+                <div className="absolute -inset-8 bg-accent/5 rounded-full animate-pulse"></div>
+                <span className="material-symbols-outlined text-6xl text-on-surface-variant/20">
+                  {hasLocation ? 'map_off' : 'location_searching'}
+                </span>
+              </div>
+              <div className="max-w-xs space-y-3">
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-on-surface-variant">
+                  {hasLocation ? 'Maps Config Issue' : 'Waiting for Signal'}
                 </p>
-                {hasLocation && (
-                  <p className="text-[10px] font-mono text-on-surface-variant/40">
-                    Set VITE_GOOGLE_MAPS_KEY in .env
-                  </p>
+                <p className="text-[10px] text-on-surface-variant/40 leading-relaxed uppercase tracking-wider">
+                  {hasLocation 
+                    ? 'The Google Maps API key is missing or invalid. Check the console for details.' 
+                    : 'We are waiting for the sender\'s device to share its GPS coordinates. This may take a moment if they are indoors or have a weak signal.'}
+                </p>
+                {!hasLocation && (
+                  <div className="pt-4 flex flex-col items-center gap-2">
+                    <div className="flex gap-1">
+                      {[0, 1, 2].map(i => (
+                        <div key={i} className="w-1.5 h-1.5 bg-accent/40 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
           )}
 
           {/* Telemetry Overlay */}
-          {lastLocation && (
+          {hasLocation && (
             <div className="absolute top-4 left-4 z-10 space-y-2 pointer-events-none">
               <div className="bg-black/70 backdrop-blur-md border border-white/10 rounded-2xl p-4 min-w-[180px]">
-                <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest mb-3">Target Telemetry</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest">Target Telemetry</p>
+                  <div className={cn(
+                    "px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter",
+                    isLive && !isStale ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                  )}>
+                    {isLive && !isStale ? 'Live' : 'Signal Lost'}
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-accent text-xs">my_location</span>
                     <span className="text-[10px] font-mono text-white/60">
-                      {lastLocation.lat.toFixed(5)}, {lastLocation.lng.toFixed(5)}
+                      {lat.toFixed(5)}, {lng.toFixed(5)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-accent text-xs">radar</span>
-                    <span className="text-[10px] font-mono text-white/60">
-                      ±{Math.round(lastLocation.accuracy)}m accuracy
-                    </span>
-                  </div>
+                  {accuracy > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-accent text-xs">radar</span>
+                      <span className="text-[10px] font-mono text-white/60">
+                        ±{Math.round(accuracy)}m accuracy
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -18,11 +18,50 @@ export default function Dashboard() {
   const [nextCheckIn, setNextCheckIn]     = useState<CheckIn | null>(null);
   const [escalation, setEscalation]       = useState<EscalationStatus | null>(null);
   const [triggering, setTriggering]       = useState(false);
+  const [locationStatus, setLocationStatus] = useState<'checking' | 'granted' | 'denied' | 'prompt'>('checking');
+  const [gpsAccuracy, setGpsAccuracy]     = useState<number | null>(null);
+  const [lastError, setLastError]         = useState<string | null>(null);
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const holdTimerRef = useRef<any>(null);
+
+  // Check for location permissions on mount
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus('denied');
+      return;
+    }
+
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        setLocationStatus(result.state as any);
+        result.onchange = () => setLocationStatus(result.state as any);
+      });
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setLocationStatus('granted');
+        // Only update state if accuracy change is > 5 meters to prevent UI flickering glitches
+        setGpsAccuracy(prev => {
+          if (prev === null || Math.abs(prev - pos.coords.accuracy) > 5) {
+            return pos.coords.accuracy;
+          }
+          return prev;
+        });
+      },
+      (err) => {
+        console.warn('[Dashboard] GPS watch error:', err.message);
+        if (err.code === 1) setLocationStatus('denied');
+        setGpsAccuracy(null);
+      },
+      { enableHighAccuracy: true }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -86,15 +125,32 @@ export default function Dashboard() {
 
   const triggerSOS = async () => {
     if (!user || triggering) return;
+    setLastError(null);
+
+    if (locationStatus === 'denied') {
+      setLastError('Location access is denied. Please enable location permissions.');
+      return;
+    }
+
     setTriggering(true);
     setIsHolding(false);
     setHoldProgress(0);
 
-    const alertId = await sosService.trigger(user);
-    if (alertId) {
-      escalationEngine.start(alertId, contacts, user.displayName || user.email || 'User', setEscalation);
+    try {
+      const alertId = await sosService.trigger(user);
+      if (alertId) {
+        escalationEngine.start(alertId, contacts, user.displayName || user.email || 'User', setEscalation);
+      } else {
+        setLastError('GPS Lock Failed: Your phone could not get a clear signal. Please move outside.');
+      }
+    } catch (error: any) {
+      console.error('[Dashboard] SOS Error:', error);
+      let msg = error.message || 'Unknown error occurred.';
+      if (msg.includes('Permission denied')) msg = 'Location Permission Denied.';
+      setLastError(msg);
+    } finally {
+      setTriggering(false);
     }
-    setTriggering(false);
   };
 
   const cancelSOS = async () => {
@@ -128,6 +184,18 @@ export default function Dashboard() {
   // ── Normal dashboard ────────────────────────────────────────────────────
   return (
     <div className="space-y-8">
+      {/* Error Banner */}
+      {lastError && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl border border-red-500/20 bg-red-500/5 text-red-400">
+          <span className="material-symbols-outlined text-sm shrink-0 mt-0.5">error</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1">System Error</p>
+            <p className="text-[11px] leading-relaxed break-words">{lastError}</p>
+            <button onClick={() => setLastError(null)} className="mt-2 text-[10px] underline uppercase tracking-widest font-black">Dismiss</button>
+          </div>
+        </div>
+      )}
+
       {/* Email config warning */}
       {!emailService.isConfigured() && (
         <div className="flex items-start gap-3 p-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 text-yellow-400">
@@ -180,9 +248,24 @@ export default function Dashboard() {
               <h2 className="text-2xl font-light text-on-background/80">
                 Everything is currently <span className="text-accent font-medium">safe</span>.
               </h2>
-              <p className="text-on-surface-variant text-xs mt-2 uppercase tracking-widest font-bold">
-                Guardian monitoring active
-              </p>
+              <div className="mt-2 flex flex-col items-center gap-2">
+                <p className="text-on-surface-variant text-xs uppercase tracking-widest font-bold">
+                  Guardian monitoring active
+                </p>
+                <div className={cn(
+                  "flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[8px] font-bold uppercase tracking-widest",
+                  locationStatus === 'granted' ? "border-green-500/20 bg-green-500/5 text-green-400" :
+                  locationStatus === 'denied' ? "border-red-500/20 bg-red-500/5 text-red-400" :
+                  "border-yellow-500/20 bg-yellow-500/5 text-yellow-400"
+                )}>
+                  <span className="material-symbols-outlined text-[10px]">
+                    {locationStatus === 'granted' ? 'location_on' : locationStatus === 'denied' ? 'location_off' : 'location_searching'}
+                  </span>
+                  {locationStatus === 'granted' 
+                    ? `GPS READY ${gpsAccuracy ? `(±${Math.round(gpsAccuracy)}m)` : ''}` 
+                    : locationStatus === 'denied' ? 'GPS DENIED' : 'GPS CHECKING...'}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -299,9 +382,22 @@ export default function Dashboard() {
                 <h2 className="text-2xl font-light text-on-background/80">
                   Everything is currently <span className="text-accent font-medium">safe</span>.
                 </h2>
-                <p className="text-on-surface-variant text-xs mt-2 uppercase tracking-widest font-bold">
-                  Guardian monitoring active
-                </p>
+                <div className="mt-2 flex flex-col items-center gap-2">
+                  <p className="text-on-surface-variant text-xs uppercase tracking-widest font-bold">
+                    Guardian monitoring active
+                  </p>
+                  <div className={cn(
+                    "flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[8px] font-bold uppercase tracking-widest",
+                    locationStatus === 'granted' ? "border-green-500/20 bg-green-500/5 text-green-400" :
+                    locationStatus === 'denied' ? "border-red-500/20 bg-red-500/5 text-red-400" :
+                    "border-yellow-500/20 bg-yellow-500/5 text-yellow-400"
+                  )}>
+                    <span className="material-symbols-outlined text-[10px]">
+                      {locationStatus === 'granted' ? 'location_on' : locationStatus === 'denied' ? 'location_off' : 'location_searching'}
+                    </span>
+                    {locationStatus === 'granted' ? 'GPS READY' : locationStatus === 'denied' ? 'GPS DENIED' : 'GPS CHECKING...'}
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -539,11 +635,20 @@ function AlertActiveView({
           </div>
 
           {/* Location status */}
-          <div className="flex items-center gap-3 p-4 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10">
-            <span className="material-symbols-outlined text-blue-300 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
-            <div>
-              <p className="font-bold text-sm text-white">Location sharing active</p>
-              <p className="text-[10px] text-white/50">Updating every 5 seconds</p>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-4 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10">
+              <span className="material-symbols-outlined text-blue-300 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
+              <div>
+                <p className="font-bold text-sm text-white">Location sharing active</p>
+                <p className="text-[10px] text-white/50">Updating in real-time</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-yellow-500/10 backdrop-blur-md rounded-2xl border border-yellow-500/20 text-yellow-200">
+              <span className="material-symbols-outlined text-sm shrink-0 mt-0.5">error</span>
+              <p className="text-[10px] font-medium leading-relaxed">
+                <strong>IMPORTANT:</strong> Keep this page open and your screen ON. If you switch apps or lock your phone, your live location tracking will pause.
+              </p>
             </div>
           </div>
 

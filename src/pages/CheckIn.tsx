@@ -15,6 +15,37 @@ export default function CheckInPage() {
   const [timeRemaining, setTimeRemaining]     = useState<string | null>(null);
   const [progressPercent, setProgressPercent] = useState<number | null>(null);
   const [triggering, setTriggering]           = useState(false);
+  const [locationStatus, setLocationStatus] = useState<'checking' | 'granted' | 'denied' | 'prompt'>('checking');
+  const [gpsAccuracy, setGpsAccuracy]     = useState<number | null>(null);
+
+  // Check for location permissions on mount
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus('denied');
+      return;
+    }
+
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        setLocationStatus(result.state as any);
+        result.onchange = () => setLocationStatus(result.state as any);
+      });
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setLocationStatus('granted');
+        setGpsAccuracy(pos.coords.accuracy);
+      },
+      (err) => {
+        if (err.code === 1) setLocationStatus('denied');
+        setGpsAccuracy(null);
+      },
+      { enableHighAccuracy: true }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -60,10 +91,16 @@ export default function CheckInPage() {
     await dbService.updateDocument(`users/${user.uid}/checkins`, activeCheckIn.id, { status: 'expired' });
 
     // Auto-trigger SOS
+    if (locationStatus === 'denied') {
+      console.warn('[CheckIn] Location denied. SOS triggered without location.');
+    }
+
     setTriggering(true);
     try {
-      await sosService.trigger(user);
+      const alertId = await sosService.trigger(user);
       navigate('/?autoTrigger=true'); // Redirect to dashboard and start escalation
+    } catch (error) {
+      console.error('[CheckIn] Failed to auto-trigger SOS:', error);
     } finally {
       setTriggering(false);
     }
@@ -246,6 +283,21 @@ export default function CheckInPage() {
                 <span className="material-symbols-outlined text-sm">radar</span>
                 Begin Active Watch
               </button>
+              
+              {/* Location Status Indicator */}
+              <div className={cn(
+                "flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border text-[10px] font-bold uppercase tracking-[0.2em]",
+                locationStatus === 'granted' ? "border-green-500/20 bg-green-500/5 text-green-400" :
+                locationStatus === 'denied' ? "border-red-500/20 bg-red-500/5 text-red-400" :
+                "border-yellow-500/20 bg-yellow-500/5 text-yellow-400"
+              )}>
+                <span className="material-symbols-outlined text-base">
+                  {locationStatus === 'granted' ? 'location_on' : locationStatus === 'denied' ? 'location_off' : 'location_searching'}
+                </span>
+                {locationStatus === 'granted' 
+                  ? `GPS READY ${gpsAccuracy ? `(±${Math.round(gpsAccuracy)}m)` : ''}` 
+                  : locationStatus === 'denied' ? 'GPS DENIED - SOS WILL BE LOCATIONLESS' : 'CHECKING GPS STATUS...'}
+              </div>
             </section>
           )}
 
