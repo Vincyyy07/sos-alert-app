@@ -104,9 +104,7 @@ stateDiagram-v2
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Styling**: Vanilla CSS (Modern Design System)
 - **Database & Auth**: [Firebase](https://firebase.google.com/) (Firestore, Authentication)
-- **APIs**: Web Geolocation API, Screen Wake Lock API
-- **Visuals**: [Lucide React](https://lucide.dev/) / Google Material Symbols
-
+- **APIs**: Web Geolocation API, Screen Wake Lock API, Google Maps API
 ---
 
 ## ⚙️ Setup & Installation
